@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medicare+ | Patient Portal</title>
+<style>
+    :root {
+        --primary: #1062fe;
+        --primary-dark: #0b46c4;
+        --primary-light: #eef4ff;
+        --success: #10b981;
+        --success-light: #ecfdf5;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg: #f6f8fb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text-dark);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* ---------- Header ---------- */
+    .site-header {
+        background: #fff;
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 200;
+    }
+    .header-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .logo {
+        font-size: 21px;
+        font-weight: 800;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+    .site-nav { display: flex; gap: 6px; align-items: center; }
+    .nav-link {
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 9px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+    .nav-link.active { background: var(--primary-light); color: var(--primary); }
+    .nav-link[disabled] { opacity: 0.4; cursor: not-allowed; }
+    .nav-link[disabled]:hover { background: transparent; color: var(--text-muted); }
+
+    .queue-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--primary);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 7px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+        border: none;
+    }
+
+    /* ---------- Layout ---------- */
+    .site-main { flex-grow: 1; width: 100%; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 40px 24px 64px 24px; }
+    .container.narrow { max-width: 480px; }
+
+    .site-footer {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-muted);
+        padding: 22px;
+        border-top: 1px solid var(--border-color);
+        background: #fff;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn-blue, .btn-outline {
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        padding: 13px 20px;
+        transition: opacity 0.15s, background 0.15s;
+    }
+    .btn-blue { background: var(--primary); color: #fff; border: none; }
+    .btn-blue:hover { background: var(--primary-dark); }
+    .btn-outline { background: #fff; border: 1px solid var(--border-color); color: var(--text-dark); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-full { width: 100%; display: block; }
+    .btn-row { display: flex; gap: 12px; }
+    .btn-row .btn-blue, .btn-row .btn-outline { flex: 1; }
+
+    /* ---------- Cards / forms ---------- */
+    .card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 22px;
+        border: 1px solid var(--border-color);
+    }
+    .form-label { font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block; }
+    .form-input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        font-size: 14px;
+        background: #fbfcfe;
+        outline: none;
+    }
+    .form-input:focus { border-color: var(--primary); background: #fff; }
+    .form-field { margin-bottom: 16px; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+
+    .progress-steps { display: flex; align-items: center; gap: 8px; margin: 4px 0 26px 0; }
+    .step-dot { flex: 1; height: 5px; border-radius: 3px; background: var(--border-color); }
+    .step-dot.active, .step-dot.completed { background: var(--primary); }
+
+    /* ---------- Welcome / hero ---------- */
+    .hero {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 40px;
+        align-items: center;
+        min-height: 60vh;
+    }
+    .hero-badge {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--primary);
+        background: var(--primary-light);
+        padding: 6px 12px;
+        border-radius: 999px;
+        margin-bottom: 18px;
+    }
+    .hero h1 { font-size: 40px; line-height: 1.2; margin-bottom: 14px; }
+    .hero p.sub { font-size: 16px; color: var(--text-muted); margin-bottom: 28px; max-width: 460px; }
+    .hero-visual {
+        background: linear-gradient(160deg, var(--primary) 0%, #4c8dff 100%);
+        border-radius: 24px;
+        min-height: 340px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-visual .token-float {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(6px);
+        border-radius: 16px;
+        padding: 20px 26px;
+        text-align: center;
+    }
+    .hero-visual .token-float .tnum { font-size: 34px; font-weight: 800; }
+
+    /* ---------- Dashboard ---------- */
+    .dash-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    .greeting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .greeting-row h2 { font-size: 24px; }
+
+    .q-status-box {
+        background: linear-gradient(135deg, var(--primary) 0%, #2f7bff 100%);
+        color: #fff;
+        border-radius: 18px;
+        padding: 24px;
+        cursor: pointer;
+        margin-bottom: 22px;
+    }
+    .q-number { font-size: 42px; font-weight: 800; margin: 4px 0; }
+
+    .live-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse 1.2s infinite; }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+        70% { box-shadow: 0 0 0 7px rgba(255,255,255,0); }
+        100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+    }
+
+    .queue-progress-track { width: 100%; height: 8px; background: rgba(255,255,255,0.25); border-radius: 4px; overflow: hidden; margin: 14px 0 8px 0; }
+    .queue-progress-fill { height: 100%; background: #fff; border-radius: 4px; transition: width 0.6s ease; }
+
+    .section-title { font-weight: 800; font-size: 15px; margin: 4px 0 14px 0; }
+    .doctor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .doctor-card {
+        background: #fff; border: 1px solid var(--border-color); border-radius: 14px;
+        padding: 16px; display: flex; gap: 12px; align-items: center; cursor: pointer;
+        transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .doctor-card:hover { box-shadow: 0 8px 20px rgba(15,23,42,0.06); border-color: var(--primary); }
+    .avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+
+    .sidebar-card { margin-bottom: 18px; }
+    .sidebar-card .row { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border-color); }
+    .sidebar-card .row:last-child { border-bottom: none; }
+    .sidebar-card .row span:first-child { color: var(--text-muted); }
+
+    /* ---------- Doctor profile / booking ---------- */
+    .doc-profile-header { display: flex; gap: 18px; align-items: center; margin-bottom: 20px; }
+
+    .queue-item { display: flex; align-items: center; gap: 14px; padding: 12px 6px; border-bottom: 1px solid var(--border-color); }
+    .queue-item:last-child { border-bottom: none; }
+    .queue-item-pos { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-light); color: var(--primary); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .queue-item.serving .queue-item-pos { background: var(--warning); color: #fff; }
+
+    .success-checkmark {
+        width: 72px; height: 72px; background: var(--success-light); color: var(--success);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 18px auto;
+    }
+
+    /* ---------- Toast notification ---------- */
+    #notification-banner {
+        position: fixed; top: 20px; right: 20px; max-width: 320px;
+        background: #1e293b; color: #fff; padding: 14px 16px; border-radius: 12px;
+        font-size: 13px; box-shadow: 0 15px 35px -8px rgba(0,0,0,0.4);
+        display: none; z-index: 1000; border-left: 4px solid var(--primary);
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 860px) {
+        .hero { grid-template-columns: 1fr; min-height: auto; }
+        .hero-visual { min-height: 220px; }
+        .hero h1 { font-size: 30px; }
+        .dash-grid { grid-template-columns: 1fr; }
+        .doctor-grid { grid-template-columns: 1fr; }
+        .form-grid-2 { grid-template-columns: 1fr; }
+        .site-nav .nav-link span.label { display: none; }
+    }
+    @media (max-width: 520px) {
+        .header-inner { padding: 12px 16px; }
+        .container { padding: 24px 16px 48px 16px; }
+    }
+
+    /* ---------- Admin: entry link ---------- */
+    .admin-entry-link {
+        border: 1px solid var(--border-color);
+        background: #fff;
+        color: var(--text-muted);
+        font-size: 12.5px;
+        font-weight: 700;
+        padding: 8px 13px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .admin-entry-link:hover { border-color: var(--primary); color: var(--primary); }
+    .admin-mode-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: #1e293b; color: #fff; font-size: 11.5px; font-weight: 700;
+        padding: 6px 12px; border-radius: 999px; margin-right: 10px;
+    }
+
+    /* ---------- Admin: layout ---------- */
+    .admin-shell { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+    .admin-sidenav { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 76px; }
+    .admin-sidenav .nav-link { text-align: left; width: 100%; padding: 11px 14px; }
+    @media (max-width: 860px) {
+        .admin-shell { grid-template-columns: 1fr; }
+        .admin-sidenav { flex-direction: row; overflow-x: auto; position: static; }
+    }
+
+    /* ---------- Admin: stat cards ---------- */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+    .stat-card { background: #fff; border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; }
+    .stat-card .stat-label { font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .stat-card .stat-value { font-size: 24px; font-weight: 800; }
+    .stat-card .stat-delta { font-size: 11.5px; font-weight: 700; margin-top: 4px; }
+    .stat-delta.up { color: var(--success); }
+    .stat-delta.down { color: var(--danger); }
+    @media (max-width: 860px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+
+    /* ---------- Admin: mini bar chart (CSS-only) ---------- */
+    .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 140px; padding: 10px 4px 0 4px; }
+    .bar-chart .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+    .bar-chart .bar-fill { width: 100%; max-width: 28px; background: linear-gradient(180deg, var(--primary) 0%, #4c8dff 100%); border-radius: 6px 6px 2px 2px; }
+    .bar-chart .bar-tick { font-size: 10.5px; color: var(--text-muted); margin-top: 6px; }
+
+    /* ---------- Admin: donut (CSS-only) ---------- */
+    .donut-wrap { display: flex; align-items: center; gap: 18px; }
+    .donut { width: 108px; height: 108px; border-radius: 50%; flex-shrink: 0; }
+    .donut-legend { font-size: 12.5px; }
+    .donut-legend .leg-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+    .donut-legend .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ---------- Admin: table ---------- */
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th { text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); padding: 8px 10px; border-bottom: 1px solid var(--border-color); }
+    .admin-table td { font-size: 13.5px; padding: 11px 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+    .badge-success { background: var(--success-light); color: var(--success); }
+    .badge-danger { background: #fef2f2; color: var(--danger); }
+    .badge-warning { background: #fffbeb; color: var(--warning); }
+    .row-action-btn { border: 1px solid var(--border-color); background: #fff; color: var(--text-muted); font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 8px; cursor: pointer; }
+    .row-action-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ---------- Admin: doctor management ---------- */
+    .admin-doctor-row { display: flex; align-items: center; gap: 14px; padding: 13px 6px; border-bottom: 1px solid var(--border-color); }
+    .admin-doctor-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <div class="logo" onclick="renderScreen(systemState.registered ? 'home-dashboard' : 'welcome')">➕ Medicare+</div>
+        <nav class="site-nav" id="site-nav"></nav>
+        <button class="admin-entry-link" id="admin-entry-btn" onclick="goAdmin()">🛡️ Admin Panel</button>
+    </div>
+</header>
+
+<main class="site-main">
+    <div class="container" id="app-view"></div>
+</main>
+
+<footer class="site-footer">© 2026 Medicare+ Health Systems — Patient Portal Prototype (for demonstration only)</footer>
+
+<div id="notification-banner">
+    <strong id="notif-title">System Alert</strong>
+    <p id="notif-body">A test push notification alert.</p>
+</div>
+
+<script>
+    const systemState = {
+        currentScreen: 'welcome',
+        registered: false,
+        role: 'patient', // 'patient' | 'admin'
+        patientData: {
+            fullName: "Rahul Kumar",
+            dob: "12/06/1995",
+            phone: "9876543210",
+            email: "rahul@gmail.com",
+            address: "22/B, MG Road",
+            city: "Chennai",
+            allergies: "Dust, Pollen",
+            chronic: "No",
+            emergencyContact: "Suresh Kumar",
+            emergencyPhone: "9876543211"
+        },
+        selectedDoctor: {
+            name: "Dr. Arjun Sharma",
+            specialty: "General Physician",
+            fee: "₹500",
+            room: "Room 102",
+            dept: "OPD Block A"
+        },
+        userToken: null,
+        queue: {
+            status: 'idle',
+            totalAhead: 0,
+            aheadList: [],
+            intervalId: null,
+            minsPerPatient: 5
+        },
+        doctors: [
+            { id: 'D1', name: 'Dr. Arjun Sharma', specialty: 'General Physician', experience: '8 Yrs', fee: 500, avatar: '👨‍⚕️' },
+            { id: 'D2', name: 'Dr. Meera Iyer', specialty: 'Dermatologist', experience: '6 Yrs', fee: 600, avatar: '👩‍⚕️' }
+        ],
+        appointments: [
+            { id: 'A-101', patient: 'Rahul Kumar', doctor: 'Dr. Arjun Sharma', date: 'Today', time: '11:45 AM', status: 'upcoming' },
+            { id: 'A-100', patient: 'Neha Patel', doctor: 'Dr. Arjun Sharma', date: 'Today', time: '11:15 AM', status: 'completed' },
+            { id: 'A-099', patient: 'Amit Singh', doctor: 'Dr. Meera Iyer', date: 'Today', time: '10:30 AM', status: 'completed' },
+            { id: 'A-098', patient: 'Pooja Verma', doctor: 'Dr. Arjun Sharma', date: 'Today', time: '12:00 PM', status: 'cancelled' },
+            { id: 'A-097', patient: 'Kiran Rao', doctor: 'Dr. Meera Iyer', date: 'Yesterday', time: '4:15 PM', status: 'completed' }
+        ],
+        showAddDoctorForm: false
+    };
+
+    function triggerPushNotification(title, body) {
+        const banner = document.getElementById('notification-banner');
+        document.getElementById('notif-title').innerText = title;
+        document.getElementById('notif-body').innerText = body;
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.display = 'none'; }, 4500);
+    }
+
+    function renderNav() {
+        const nav = document.getElementById('site-nav');
+        const adminBtn = document.getElementById('admin-entry-btn');
+        const s = systemState.currentScreen;
+
+        if (systemState.role === 'admin') {
+            adminBtn.style.display = 'none';
+            nav.innerHTML = `<span class="admin-mode-badge">🛡️ Admin Mode</span><button class="nav-link" onclick="exitAdmin()">Exit to Patient App</button>`;
+            return;
+        }
+
+        adminBtn.style.display = 'inline-flex';
+        const loggedIn = systemState.registered || systemState.currentScreen !== 'welcome';
+
+        if (!loggedIn) { nav.innerHTML = ''; return; }
+
+        const homeActive = s === 'home-dashboard' ? 'active' : '';
+        const docActive = (s === 'doctor-profile' || s === 'booking-summary') ? 'active' : '';
+        const queueActive = s === 'live-queue' ? 'active' : '';
+        const queueDisabled = systemState.userToken ? '' : 'disabled';
+
+        nav.innerHTML = `
+            <button class="nav-link ${homeActive}" onclick="renderScreen('home-dashboard')">Home</button>
+            <button class="nav-link ${docActive}" onclick="renderScreen('doctor-profile')">Find a Doctor</button>
+            ${systemState.userToken ? `
+                <button class="queue-pill" onclick="renderScreen('live-queue')">
+                    <span class="live-dot"></span> Token ${systemState.userToken} · Live
+                </button>
+            ` : `<button class="nav-link" ${queueDisabled}>My Queue</button>`}
+        `;
+    }
+
+    function renderAdminSidenav(active) {
+        const items = [
+            { key: 'admin-dashboard', label: '📊 Dashboard' },
+            { key: 'admin-doctors', label: '🩺 Doctors' },
+            { key: 'admin-appointments', label: '📅 Appointments' },
+            { key: 'admin-queue', label: '⏱️ Live Queue' },
+            { key: 'admin-reports', label: '📈 Reports' }
+        ];
+        return `
+            <div class="admin-sidenav">
+                ${items.map(it => `<button class="nav-link ${it.key === active ? 'active' : ''}" onclick="renderScreen('${it.key}')">${it.label}</button>`).join('')}
+            </div>
+        `;
+    }
+
+    function goAdmin() {
+        systemState.role = 'admin';
+        renderScreen('admin-dashboard');
+    }
+
+    function exitAdmin() {
+        systemState.role = 'patient';
+        renderScreen(systemState.registered ? 'home-dashboard' : 'welcome');
+    }
+
+    function renderScreen(screen) {
+        systemState.currentScreen = screen;
+        const view = document.getElementById('app-view');
+        view.className = 'container';
+        view.innerHTML = "";
+
+        switch (screen) {
+            case 'welcome':
+                view.classList.remove('container'); // full width hero handled by parent padding
+                view.innerHTML = `
+                    <div class="hero">
+                        <div>
+                            <span class="hero-badge">Smart Queue System</span>
+                            <h1>Skip the waiting room.<br>Track your turn live.</h1>
+                            <p class="sub">Register once, book a slot with any doctor, and watch your queue position update in real time from wherever you are.</p>
+                            <div class="btn-row" style="max-width: 420px;">
+                                <button class="btn-blue" onclick="renderScreen('reg-1')">Register Profile</button>
+                                <button class="btn-outline" onclick="markGuestAndGo()">Continue as Guest</button>
+                            </div>
+                        </div>
+                        <div class="hero-visual">
+                            <div class="token-float">
+                                <div style="font-size:11px; text-transform:uppercase; opacity:0.85;">Your Token</div>
+                                <div class="tnum">T-24</div>
+                                <div style="font-size:12px; opacity:0.9;">3 patients ahead</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'reg-1':
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card">
+                        <div style="font-weight: 800; font-size: 20px; margin-bottom: 4px;">Patient Registration</div>
+                        <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Step 1 of 4 — Personal details</p>
+                        <div class="progress-steps">
+                            <span class="step-dot active"></span><span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="form-field"><label class="form-label">Full Name</label><input class="form-input" id="inp-name" value="${systemState.patientData.fullName}"></div>
+                            <div class="form-field"><label class="form-label">Date of Birth</label><input class="form-input" id="inp-dob" value="${systemState.patientData.dob}"></div>
+                            <div class="form-field"><label class="form-label">Mobile Number</label><input class="form-input" id="inp-phone" value="${systemState.patientData.phone}"></div>
+                            <div class="form-field"><label class="form-label">Email Address</label><input class="form-input" id="inp-email" value="${systemState.patientData.email}"></div>
+                        </div>
+                        <button class="btn-blue btn-full" onclick="saveRegStep(1, 'reg-2')">Next Step</button>
+                    </div>
+                `;
+                break;
+
+            case 'reg-2':
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card">
+                        <div style="font-weight: 800; font-size: 20px; margin-bottom: 4px;">Patient Address</div>
+                        <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Step 2 of 4 — Where you live</p>
+                        <div class="progress-steps">
+                            <span class="step-dot completed"></span><span class="step-dot active"></span><span class="step-dot"></span><span class="step-dot"></span>
+                        </div>
+                        <div class="form-field"><label class="form-label">Street Address</label><input class="form-input" id="inp-addr" value="${systemState.patientData.address}"></div>
+                        <div class="form-field"><label class="form-label">City</label><input class="form-input" id="inp-city" value="${systemState.patientData.city}"></div>
+                        <div class="btn-row">
+                            <button class="btn-outline" onclick="renderScreen('reg-1')">Back</button>
+                            <button class="btn-blue" onclick="saveRegStep(2, 'reg-3')">Next</button>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'reg-3':
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card">
+                        <div style="font-weight: 800; font-size: 20px; margin-bottom: 4px;">Medical Information</div>
+                        <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Step 3 of 4 — Health background</p>
+                        <div class="progress-steps">
+                            <span class="step-dot completed"></span><span class="step-dot completed"></span><span class="step-dot active"></span><span class="step-dot"></span>
+                        </div>
+                        <div class="form-field"><label class="form-label">Allergies (if any)</label><input class="form-input" id="inp-allergy" value="${systemState.patientData.allergies}"></div>
+                        <div class="form-field"><label class="form-label">Chronic Conditions</label><input class="form-input" id="inp-chronic" value="${systemState.patientData.chronic}"></div>
+                        <div class="btn-row">
+                            <button class="btn-outline" onclick="renderScreen('reg-2')">Back</button>
+                            <button class="btn-blue" onclick="saveRegStep(3, 'reg-4')">Next</button>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'reg-4':
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card">
+                        <div style="font-weight: 800; font-size: 20px; margin-bottom: 4px;">Emergency Contact</div>
+                        <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Step 4 of 4 — In case we need to reach someone</p>
+                        <div class="progress-steps">
+                            <span class="step-dot completed"></span><span class="step-dot completed"></span><span class="step-dot completed"></span><span class="step-dot active"></span>
+                        </div>
+                        <div class="form-field"><label class="form-label">Contact Person Name</label><input class="form-input" id="inp-econ" value="${systemState.patientData.emergencyContact}"></div>
+                        <div class="form-field"><label class="form-label">Mobile Number</label><input class="form-input" id="inp-ephone" value="${systemState.patientData.emergencyPhone}"></div>
+                        <div class="btn-row">
+                            <button class="btn-outline" onclick="renderScreen('reg-3')">Back</button>
+                            <button class="btn-blue" onclick="submitRegistration()">Submit Registration</button>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'home-dashboard':
+                const nextToken = systemState.userToken;
+                view.innerHTML = `
+                    <div class="greeting-row">
+                        <h2>Hello, ${systemState.patientData.fullName.split(' ')[0]} 👋</h2>
+                        <span style="font-size: 22px;">🔔</span>
+                    </div>
+                    <div class="dash-grid">
+                        <div>
+                            ${nextToken ? `
+                            <div class="q-status-box" onclick="renderScreen('live-queue')">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span style="font-size: 12px; text-transform: uppercase; opacity: 0.85;">Active Consultation Track</span>
+                                    <span class="live-badge"><span class="live-dot"></span>Live</span>
+                                </div>
+                                <div class="q-number">${nextToken}</div>
+                                <div style="font-size: 13px; display:flex; justify-content:space-between;">
+                                    <span>${systemState.queue.status === 'called' ? "It's your turn now" : systemState.queue.aheadList.length + ' patient(s) ahead'}</span>
+                                    <span>Room: 102</span>
+                                </div>
+                            </div>
+                            ` : `
+                            <div class="card" style="background: var(--primary-light); border-color: #cbd5e1; text-align: center; padding: 28px; margin-bottom: 22px;">
+                                <p style="font-size: 14px; color: var(--primary); font-weight: 700; margin-bottom: 14px;">You do not have any active appointments</p>
+                                <button class="btn-blue" onclick="renderScreen('doctor-profile')">Book Queue Slot Now</button>
+                            </div>
+                            `}
+
+                            <div class="section-title">Recommended Specialists</div>
+                            <div class="doctor-grid">
+                                <div class="doctor-card" onclick="renderScreen('doctor-profile')">
+                                    <div class="avatar">👨‍⚕️</div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size:14px;">Dr. Arjun Sharma</div>
+                                        <div style="font-size: 12px; color: var(--text-muted);">General Physician · 8 Yrs</div>
+                                    </div>
+                                </div>
+                                <div class="doctor-card" onclick="renderScreen('doctor-profile')">
+                                    <div class="avatar">👩‍⚕️</div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size:14px;">Dr. Meera Iyer</div>
+                                        <div style="font-size: 12px; color: var(--text-muted);">Dermatologist · 6 Yrs</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="card sidebar-card">
+                                <div style="font-weight:700; font-size:13px; margin-bottom:10px;">Your Profile</div>
+                                <div class="row"><span>Name</span><span>${systemState.patientData.fullName}</span></div>
+                                <div class="row"><span>Phone</span><span>${systemState.patientData.phone}</span></div>
+                                <div class="row"><span>City</span><span>${systemState.patientData.city}</span></div>
+                                <div class="row"><span>Allergies</span><span>${systemState.patientData.allergies}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'doctor-profile':
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card">
+                        <div class="doc-profile-header">
+                            <div class="avatar" style="width: 64px; height: 64px; font-size: 28px;">👨‍⚕️</div>
+                            <div>
+                                <div style="font-weight: 800; font-size: 19px;">Dr. Arjun Sharma</div>
+                                <div style="font-size: 13px; color: var(--text-muted);">General Physician</div>
+                                <div style="font-size: 12.5px; color: var(--primary); font-weight: 700;">Consultation Fee: ₹500</div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-bottom: 20px; background:var(--bg);">
+                            <div style="font-weight: 700; margin-bottom: 8px; font-size: 13px;">Next Available Slot</div>
+                            <div style="color: var(--success); font-weight: 800; font-size: 17px;">11:45 AM (Today)</div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Approx. 3 patients ahead</div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn-outline" onclick="renderScreen('home-dashboard')">Cancel</button>
+                            <button class="btn-blue" onclick="renderScreen('booking-summary')">Book Appointment</button>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'booking-summary':
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card">
+                        <div style="font-weight: 800; font-size: 19px; margin-bottom: 18px;">Booking Summary</div>
+                        <div class="card" style="background:var(--bg); margin-bottom: 20px;">
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Specialist Doctor</div>
+                            <div style="font-weight: 700; font-size: 16px; margin-bottom: 12px;">Dr. Arjun Sharma</div>
+
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Assigned Location</div>
+                            <div style="font-weight: 700; font-size: 14px; margin-bottom: 12px;">City Care Hospital, OPD Room 102</div>
+
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Calculated Fee</div>
+                            <div style="font-weight: 700; font-size: 14px; color: var(--primary);">₹500</div>
+                        </div>
+                        <button class="btn-blue btn-full" onclick="executeBooking()">Confirm Booking</button>
+                    </div>
+                `;
+                break;
+
+            case 'booking-confirmed':
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card" style="text-align:center;">
+                        <div class="success-checkmark">✔</div>
+                        <div style="font-weight: 800; font-size: 21px; margin-bottom: 8px;">Appointment Confirmed!</div>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Your entry token has been logged to the central queue system.</p>
+
+                        <div class="card" style="background: var(--success-light); border-color: var(--success); margin-bottom: 22px;">
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Your Token ID</div>
+                            <div class="q-number" style="color: var(--success); margin: 4px 0;">${systemState.userToken || 'T-24'}</div>
+                            <div style="font-size: 12px; font-weight: 700;">Proceed to Room 102</div>
+                        </div>
+
+                        <button class="btn-blue btn-full" style="margin-bottom: 10px;" onclick="renderScreen('live-queue')">Track Live Queue</button>
+                        <button class="btn-outline btn-full" onclick="renderScreen('home-dashboard')">Return to Home</button>
+                    </div>
+                `;
+                break;
+
+            case 'live-queue':
+                const q = systemState.queue;
+                const progressPct = q.totalAhead > 0
+                    ? Math.round(((q.totalAhead - q.aheadList.length) / q.totalAhead) * 100)
+                    : 100;
+                const etaMins = q.aheadList.length * q.minsPerPatient;
+
+                let queueListHtml = '';
+                q.aheadList.forEach((p, i) => {
+                    queueListHtml += `
+                        <div class="queue-item ${i === 0 ? 'serving' : ''}">
+                            <div class="queue-item-pos">${i + 1}</div>
+                            <div style="flex-grow:1;">
+                                <div style="font-weight:600; font-size:13.5px;">${p.name}</div>
+                                <div style="font-size:11.5px; color:var(--text-muted);">${p.id}</div>
+                            </div>
+                            ${i === 0 ? '<span style="font-size:10px; font-weight:700; color:var(--warning);">WITH DOCTOR</span>' : ''}
+                        </div>
+                    `;
+                });
+
+                view.innerHTML = `
+                    <div class="greeting-row">
+                        <h2 style="font-size:22px;">Live Queue Tracker</h2>
+                        <span class="live-badge" style="color: var(--danger);"><span class="live-dot" style="background:var(--danger);"></span>Live</span>
+                    </div>
+
+                    <div class="dash-grid">
+                        <div>
+                            ${q.status === 'called' ? `
+                            <div class="card" style="background: var(--success-light); border-color: var(--success); text-align:center; padding: 32px; margin-bottom:22px;">
+                                <div style="font-size: 17px; font-weight: 800; color: var(--success); margin-bottom: 6px;">It's your turn!</div>
+                                <p style="font-size: 13px; color: var(--text-muted);">Please proceed to Room 102 now. The doctor is ready to see you.</p>
+                            </div>
+                            ` : `
+                            <div class="q-status-box" style="cursor:default; margin-bottom:22px;">
+                                <span style="font-size: 12px; text-transform: uppercase; opacity: 0.85;">Token ${systemState.userToken}</span>
+                                <div class="q-number">${q.aheadList.length}</div>
+                                <div style="font-size: 13px; opacity: 0.9;">patient(s) ahead of you</div>
+                                <div class="queue-progress-track">
+                                    <div class="queue-progress-fill" style="width:${progressPct}%;"></div>
+                                </div>
+                                <div style="font-size: 13px; display:flex; justify-content:space-between;">
+                                    <span>Approx. wait: ~${etaMins} min</span>
+                                    <span>Room 102</span>
+                                </div>
+                            </div>
+                            `}
+                        </div>
+                        <div>
+                            <div class="section-title">Queue Ahead of You</div>
+                            <div class="card" style="padding: 6px 16px;">
+                                ${queueListHtml || '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 20px 0;">You are next in line.</p>'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-outline" style="margin-top:22px;" onclick="renderScreen('home-dashboard')">Back to Home</button>
+                `;
+                break;
+
+            case 'admin-dashboard': {
+                const upcoming = systemState.appointments.filter(a => a.status === 'upcoming').length;
+                const completed = systemState.appointments.filter(a => a.status === 'completed').length;
+                const cancelled = systemState.appointments.filter(a => a.status === 'cancelled').length;
+                const totalPatients = new Set(systemState.appointments.map(a => a.patient)).size;
+
+                view.innerHTML = `
+                    <div class="admin-shell">
+                        ${renderAdminSidenav('admin-dashboard')}
+                        <div>
+                            <h2 style="font-size:22px; margin-bottom:18px;">Admin Dashboard</h2>
+                            <div class="stat-grid">
+                                <div class="stat-card">
+                                    <div class="stat-label">Today's Appointments</div>
+                                    <div class="stat-value">${systemState.appointments.length}</div>
+                                    <div class="stat-delta up">▲ Live</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Registered Patients</div>
+                                    <div class="stat-value">${totalPatients}</div>
+                                    <div class="stat-delta up">▲ 12% vs last wk</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Active Doctors</div>
+                                    <div class="stat-value">${systemState.doctors.length}</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">Cancelled Today</div>
+                                    <div class="stat-value">${cancelled}</div>
+                                    <div class="stat-delta down">${cancelled > 0 ? '▼ Needs review' : 'All clear'}</div>
+                                </div>
+                            </div>
+
+                            <div class="dash-grid">
+                                <div class="card">
+                                    <div class="section-title">Patients Seen — Last 7 Days</div>
+                                    <div class="bar-chart">
+                                        ${[8, 14, 10, 18, 13, 6, 11].map((v, i) => `
+                                            <div class="bar-col">
+                                                <div class="bar-fill" style="height:${v * 6}px;"></div>
+                                                <div class="bar-tick">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="section-title">Appointment Status</div>
+                                    <div class="donut-wrap">
+                                        <div class="donut" style="background: conic-gradient(var(--success) 0% ${completed*10}%, var(--primary) ${completed*10}% ${(completed+upcoming)*10}%, var(--danger) ${(completed+upcoming)*10}% 100%);"></div>
+                                        <div class="donut-legend">
+                                            <div class="leg-row"><span class="dot" style="background:var(--success);"></span>Completed (${completed})</div>
+                                            <div class="leg-row"><span class="dot" style="background:var(--primary);"></span>Upcoming (${upcoming})</div>
+                                            <div class="leg-row"><span class="dot" style="background:var(--danger);"></span>Cancelled (${cancelled})</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'admin-doctors': {
+                view.innerHTML = `
+                    <div class="admin-shell">
+                        ${renderAdminSidenav('admin-doctors')}
+                        <div>
+                            <div class="greeting-row">
+                                <h2 style="font-size:22px;">Manage Doctors</h2>
+                                <button class="btn-blue" onclick="toggleAddDoctorForm()">${systemState.showAddDoctorForm ? 'Cancel' : '+ Add Doctor'}</button>
+                            </div>
+
+                            ${systemState.showAddDoctorForm ? `
+                            <div class="card" style="margin-bottom:20px;">
+                                <div class="form-grid-2">
+                                    <div class="form-field"><label class="form-label">Doctor Name</label><input class="form-input" id="inp-doc-name" placeholder="Dr. Full Name"></div>
+                                    <div class="form-field"><label class="form-label">Specialty</label><input class="form-input" id="inp-doc-spec" placeholder="e.g. Cardiologist"></div>
+                                    <div class="form-field"><label class="form-label">Experience</label><input class="form-input" id="inp-doc-exp" placeholder="e.g. 5 Yrs"></div>
+                                    <div class="form-field"><label class="form-label">Consultation Fee (₹)</label><input class="form-input" id="inp-doc-fee" placeholder="e.g. 500"></div>
+                                </div>
+                                <button class="btn-blue btn-full" onclick="saveNewDoctor()">Save Doctor</button>
+                            </div>
+                            ` : ''}
+
+                            <div class="card" style="padding: 6px 16px;">
+                                ${systemState.doctors.map(d => `
+                                    <div class="admin-doctor-row">
+                                        <div class="avatar">${d.avatar}</div>
+                                        <div style="flex-grow:1;">
+                                            <div style="font-weight:700; font-size:14px;">${d.name}</div>
+                                            <div style="font-size:12px; color:var(--text-muted);">${d.specialty} · ${d.experience} · ₹${d.fee} fee</div>
+                                        </div>
+                                        <button class="row-action-btn" onclick="removeDoctor('${d.id}')">Remove</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'admin-appointments': {
+                const statusBadge = (st) => st === 'completed' ? '<span class="badge badge-success">Completed</span>'
+                    : st === 'cancelled' ? '<span class="badge badge-danger">Cancelled</span>'
+                    : '<span class="badge badge-warning">Upcoming</span>';
+
+                view.innerHTML = `
+                    <div class="admin-shell">
+                        ${renderAdminSidenav('admin-appointments')}
+                        <div>
+                            <h2 style="font-size:22px; margin-bottom:18px;">All Appointments</h2>
+                            <div class="card" style="padding: 6px 16px; overflow-x:auto;">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Date &amp; Time</th><th>Status</th><th></th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${systemState.appointments.map(a => `
+                                            <tr>
+                                                <td>${a.id}</td>
+                                                <td>${a.patient}</td>
+                                                <td>${a.doctor}</td>
+                                                <td>${a.date}, ${a.time}</td>
+                                                <td>${statusBadge(a.status)}</td>
+                                                <td>${a.status === 'upcoming' ? `<button class="row-action-btn" onclick="adminCancelAppointment('${a.id}')">Cancel</button>` : ''}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'admin-queue': {
+                const q = systemState.queue;
+                view.innerHTML = `
+                    <div class="admin-shell">
+                        ${renderAdminSidenav('admin-queue')}
+                        <div>
+                            <div class="greeting-row">
+                                <h2 style="font-size:22px;">Live Queue Control</h2>
+                                <span class="live-badge" style="color: var(--danger);"><span class="live-dot" style="background:var(--danger);"></span>Live</span>
+                            </div>
+
+                            <div class="card" style="margin-bottom:20px;">
+                                <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Room 102 · Dr. Arjun Sharma</div>
+                                <div style="font-weight:800; font-size:18px; margin-bottom:14px;">${q.status === 'idle' ? 'No active queue' : q.status === 'called' ? 'Currently serving next token' : `${q.aheadList.length} patient(s) waiting`}</div>
+                                <div class="btn-row">
+                                    <button class="btn-blue" onclick="adminCallNext()" ${q.status !== 'waiting' ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Call Next Patient</button>
+                                </div>
+                            </div>
+
+                            <div class="section-title">Waiting List</div>
+                            <div class="card" style="padding: 6px 16px;">
+                                ${q.aheadList.length ? q.aheadList.map((p, i) => `
+                                    <div class="queue-item ${i === 0 ? 'serving' : ''}">
+                                        <div class="queue-item-pos">${i + 1}</div>
+                                        <div style="flex-grow:1;">
+                                            <div style="font-weight:600; font-size:13.5px;">${p.name}</div>
+                                            <div style="font-size:11.5px; color:var(--text-muted);">${p.id}</div>
+                                        </div>
+                                        <button class="row-action-btn" onclick="adminCancelToken('${p.id}')">Cancel</button>
+                                    </div>
+                                `).join('') : '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 20px 0;">Queue is empty.</p>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'admin-reports': {
+                view.innerHTML = `
+                    <div class="admin-shell">
+                        ${renderAdminSidenav('admin-reports')}
+                        <div>
+                            <h2 style="font-size:22px; margin-bottom:18px;">Reports</h2>
+                            <div class="card" style="margin-bottom:20px;">
+                                <div class="section-title">Revenue by Doctor (This Week, ₹)</div>
+                                <div class="bar-chart">
+                                    ${systemState.doctors.map(d => `
+                                        <div class="bar-col">
+                                            <div class="bar-fill" style="height:${Math.min(d.fee / 6, 130)}px;"></div>
+                                            <div class="bar-tick">${d.name.replace('Dr. ', '')}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="section-title">Appointment Outcomes</div>
+                                <table class="admin-table">
+                                    <thead><tr><th>Status</th><th>Count</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><span class="badge badge-success">Completed</span></td><td>${systemState.appointments.filter(a=>a.status==='completed').length}</td></tr>
+                                        <tr><td><span class="badge badge-warning">Upcoming</span></td><td>${systemState.appointments.filter(a=>a.status==='upcoming').length}</td></tr>
+                                        <tr><td><span class="badge badge-danger">Cancelled</span></td><td>${systemState.appointments.filter(a=>a.status==='cancelled').length}</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+        }
+
+        renderNav();
+        window.scrollTo(0, 0);
+    }
+
+    function markGuestAndGo() {
+        systemState.registered = true;
+        renderScreen('home-dashboard');
+    }
+
+    function saveRegStep(step, nextScreen) {
+        if (step === 1) {
+            systemState.patientData.fullName = document.getElementById('inp-name').value;
+            systemState.patientData.dob = document.getElementById('inp-dob').value;
+            systemState.patientData.phone = document.getElementById('inp-phone').value;
+            systemState.patientData.email = document.getElementById('inp-email').value;
+        } else if (step === 2) {
+            systemState.patientData.address = document.getElementById('inp-addr').value;
+            systemState.patientData.city = document.getElementById('inp-city').value;
+        } else if (step === 3) {
+            systemState.patientData.allergies = document.getElementById('inp-allergy').value;
+            systemState.patientData.chronic = document.getElementById('inp-chronic').value;
+        }
+        renderScreen(nextScreen);
+    }
+
+    function submitRegistration() {
+        systemState.patientData.emergencyContact = document.getElementById('inp-econ').value;
+        systemState.patientData.emergencyPhone = document.getElementById('inp-ephone').value;
+        systemState.registered = true;
+        renderScreen('home-dashboard');
+    }
+
+    function executeBooking() {
+        systemState.userToken = "T-24";
+
+        systemState.queue.aheadList = [
+            { id: "T-21", name: "Neha Patel" },
+            { id: "T-22", name: "Amit Singh" },
+            { id: "T-23", name: "Pooja Verma" }
+        ];
+        systemState.queue.totalAhead = systemState.queue.aheadList.length;
+        systemState.queue.status = 'waiting';
+
+        triggerPushNotification("Medicare+", "Appointment scheduled successfully! Your Token is T-24.");
+        startQueueSimulation();
+        renderScreen('booking-confirmed');
+    }
+
+    // Advances the live queue by one patient every tick, simulating
+    // real clinic throughput. Re-renders if the user is on a screen
+    // that displays queue position.
+    function tickQueue() {
+        const q = systemState.queue;
+        if (q.status !== 'waiting') return;
+
+        if (q.aheadList.length > 0) {
+            const called = q.aheadList.shift();
+            if (q.aheadList.length > 0) {
+                triggerPushNotification("Medicare+ Queue", `Token ${called.id} has been seen. ${q.aheadList.length} patient(s) now ahead of you.`);
+            } else {
+                triggerPushNotification("Medicare+ Queue", `Token ${called.id} has been seen. You're next!`);
+            }
+        } else {
+            q.status = 'called';
+            clearInterval(q.intervalId);
+            q.intervalId = null;
+            triggerPushNotification("Medicare+", "It's your turn! Please proceed to Room 102.");
+        }
+
+        if (systemState.currentScreen === 'live-queue' || systemState.currentScreen === 'home-dashboard') {
+            renderScreen(systemState.currentScreen);
+        } else {
+            renderNav();
+        }
+    }
+
+    function startQueueSimulation() {
+        if (systemState.queue.intervalId) clearInterval(systemState.queue.intervalId);
+        systemState.queue.intervalId = setInterval(tickQueue, 6000);
+    }
+
+    // ---------- Admin actions ----------
+    function toggleAddDoctorForm() {
+        systemState.showAddDoctorForm = !systemState.showAddDoctorForm;
+        renderScreen('admin-doctors');
+    }
+
+    function saveNewDoctor() {
+        const name = document.getElementById('inp-doc-name').value.trim();
+        const specialty = document.getElementById('inp-doc-spec').value.trim();
+        const experience = document.getElementById('inp-doc-exp').value.trim();
+        const fee = parseInt(document.getElementById('inp-doc-fee').value, 10) || 0;
+        if (!name) { return; }
+
+        systemState.doctors.push({
+            id: 'D' + (systemState.doctors.length + 1),
+            name: name.startsWith('Dr.') ? name : 'Dr. ' + name,
+            specialty: specialty || 'General Physician',
+            experience: experience || '—',
+            fee: fee || 500,
+            avatar: '🩺'
+        });
+        systemState.showAddDoctorForm = false;
+        triggerPushNotification('Medicare+ Admin', `${name} added to the roster.`);
+        renderScreen('admin-doctors');
+    }
+
+    function removeDoctor(id) {
+        systemState.doctors = systemState.doctors.filter(d => d.id !== id);
+        renderScreen('admin-doctors');
+    }
+
+    function adminCancelAppointment(id) {
+        const appt = systemState.appointments.find(a => a.id === id);
+        if (!appt) return;
+        appt.status = 'cancelled';
+        triggerPushNotification('Medicare+ Admin', `Appointment ${id} cancelled — patient has been notified.`);
+        renderScreen('admin-appointments');
+    }
+
+    function adminCallNext() {
+        tickQueue();
+    }
+
+    function adminCancelToken(id) {
+        const q = systemState.queue;
+        q.aheadList = q.aheadList.filter(p => p.id !== id);
+        q.totalAhead = q.aheadList.length;
+        triggerPushNotification('Medicare+ Admin', `Token ${id} cancelled by admin.`);
+        renderScreen('admin-queue');
+    }
+
+    renderScreen('welcome');
+</script>
+</body>
+</html>

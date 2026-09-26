@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medicare+ | Doctor Portal</title>
+<style>
+    :root {
+        --primary: #10b981;
+        --primary-dark: #059669;
+        --primary-light: #ecfdf5;
+        --accent: #1062fe;
+        --accent-light: #eef4ff;
+        --success: #10b981;
+        --success-light: #ecfdf5;
+        --danger: #ef4444;
+        --danger-light: #fef2f2;
+        --warning: #f59e0b;
+        --warning-light: #fffbeb;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg: #f6f8fb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text-dark);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* ---------- Header ---------- */
+    .site-header { background: #fff; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 200; }
+    .header-inner { max-width: 1120px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 21px; font-weight: 800; color: var(--primary-dark); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .logo span.tag { font-size: 10.5px; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 3px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .3px; }
+    .site-nav { display: flex; gap: 6px; align-items: center; }
+    .nav-link { border: none; background: transparent; color: var(--text-muted); font-size: 14px; font-weight: 600; padding: 9px 14px; border-radius: 8px; cursor: pointer; }
+    .nav-link:hover { background: var(--primary-light); color: var(--primary-dark); }
+    .nav-link.active { background: var(--primary-light); color: var(--primary-dark); }
+
+    .bell-btn { position: relative; border: none; background: transparent; font-size: 19px; cursor: pointer; padding: 6px; border-radius: 8px; }
+    .bell-btn:hover { background: var(--primary-light); }
+    .bell-dot { position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--danger); border: 2px solid #fff; }
+
+    .avatar-pill { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 5px 10px 5px 5px; border-radius: 999px; border: 1px solid var(--border-color); }
+    .avatar-pill:hover { border-color: var(--primary); }
+    .avatar-pill .mini-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+
+    /* ---------- Layout ---------- */
+    .site-main { flex-grow: 1; width: 100%; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 36px 24px 64px 24px; }
+    .container.narrow { max-width: 480px; }
+    .site-footer { text-align: center; font-size: 12px; color: var(--text-muted); padding: 22px; border-top: 1px solid var(--border-color); background: #fff; }
+
+    /* ---------- Buttons ---------- */
+    .btn-green, .btn-outline, .btn-danger { border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; padding: 13px 20px; transition: opacity 0.15s, background 0.15s; border: none; }
+    .btn-green { background: var(--primary); color: #fff; }
+    .btn-green:hover { background: var(--primary-dark); }
+    .btn-outline { background: #fff; border: 1px solid var(--border-color); color: var(--text-dark); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary-dark); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-full { width: 100%; display: block; }
+    .btn-row { display: flex; gap: 12px; }
+    .btn-row > * { flex: 1; }
+    .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 8px; }
+
+    /* ---------- Cards / forms ---------- */
+    .card { background: #fff; border-radius: 16px; padding: 22px; border: 1px solid var(--border-color); }
+    .form-label { font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block; }
+    .form-input, .form-textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background: #fbfcfe; outline: none; font-family: inherit; }
+    .form-input:focus, .form-textarea:focus { border-color: var(--primary); background: #fff; }
+    .form-field { margin-bottom: 16px; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+
+    /* ---------- Login hero ---------- */
+    .login-wrap { max-width: 380px; margin: 40px auto; text-align: center; }
+    .login-wrap .logo { justify-content: center; margin-bottom: 22px; font-size: 24px; }
+    .login-wrap p.sub { color: var(--text-muted); font-size: 13.5px; margin-bottom: 24px; }
+    .login-wrap .card { text-align: left; }
+    .forgot-link { display: block; text-align: right; font-size: 12.5px; color: var(--primary-dark); font-weight: 600; margin: -8px 0 18px 0; cursor: pointer; }
+
+    /* ---------- Dashboard ---------- */
+    .greeting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .greeting-row h2 { font-size: 24px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-card { background: #fff; border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; }
+    .stat-card .num { font-size: 26px; font-weight: 800; }
+    .stat-card .lbl { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+    .stat-card.green .num { color: var(--primary-dark); }
+    .stat-card.blue .num { color: var(--accent); }
+    .stat-card.amber .num { color: var(--warning); }
+    .stat-card.red .num { color: var(--danger); }
+
+    .dash-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: start; }
+    .section-title { font-weight: 800; font-size: 15px; margin: 4px 0 14px 0; }
+
+    .sched-item { display: flex; align-items: center; gap: 14px; padding: 13px 6px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+    .sched-item:last-child { border-bottom: none; }
+    .sched-item:hover { background: var(--bg); border-radius: 10px; }
+    .sched-time { width: 68px; font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; }
+    .sched-name { font-weight: 700; font-size: 14px; }
+    .sched-meta { font-size: 12px; color: var(--text-muted); }
+    .status-tag { font-size: 10.5px; font-weight: 700; padding: 4px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .3px; white-space: nowrap; }
+    .status-tag.waiting { background: var(--warning-light); color: var(--warning); }
+    .status-tag.in-consultation { background: var(--primary-light); color: var(--primary-dark); }
+    .status-tag.completed { background: #eef2ff; color: #4338ca; }
+    .status-tag.cancelled { background: var(--danger-light); color: var(--danger); }
+    .status-tag.upcoming { background: var(--accent-light); color: var(--accent); }
+
+    .sidebar-card { margin-bottom: 18px; }
+    .sidebar-card .row { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border-color); }
+    .sidebar-card .row:last-child { border-bottom: none; }
+    .sidebar-card .row span:first-child { color: var(--text-muted); }
+
+    .avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+
+    /* ---------- Live queue ---------- */
+    .token-hero { background: linear-gradient(135deg, var(--primary) 0%, #34d399 100%); color: #fff; border-radius: 18px; padding: 26px; margin-bottom: 22px; }
+    .token-hero .tlabel { font-size: 12px; text-transform: uppercase; opacity: .85; letter-spacing: .3px; }
+    .token-hero .tnum { font-size: 40px; font-weight: 800; margin: 4px 0 10px 0; }
+    .live-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); } 70% { box-shadow: 0 0 0 7px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+
+    .queue-list-item { display: flex; align-items: center; gap: 14px; padding: 12px 6px; border-bottom: 1px solid var(--border-color); }
+    .queue-list-item:last-child { border-bottom: none; }
+    .queue-pos { width: 30px; height: 30px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* ---------- Patient details / consultation ---------- */
+    .patient-header { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; }
+    .vitals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+    .vitals-grid .vbox { background: var(--bg); border-radius: 10px; padding: 12px; text-align: center; }
+    .vitals-grid .vbox .vval { font-weight: 800; font-size: 15px; }
+    .vitals-grid .vbox .vlbl { font-size: 11px; color: var(--text-muted); }
+
+    .rx-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .rx-row .form-input { margin-bottom: 0; }
+    .rx-remove { background: var(--danger-light); color: var(--danger); border: none; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-weight: 700; flex-shrink: 0; }
+    .add-rx-btn { background: none; border: 1.5px dashed var(--border-color); color: var(--primary-dark); font-weight: 700; font-size: 13px; padding: 10px; border-radius: 10px; width: 100%; cursor: pointer; }
+    .add-rx-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+
+    .success-checkmark { width: 72px; height: 72px; background: var(--success-light); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 18px auto; }
+    .warn-icon { width: 62px; height: 62px; background: var(--danger-light); color: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px auto; }
+
+    /* ---------- Notifications ---------- */
+    .notif-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .notif-item { display: flex; gap: 12px; padding: 14px 6px; border-bottom: 1px solid var(--border-color); }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .notif-icon.warn { background: var(--danger-light); color: var(--danger); }
+    .notif-icon.info { background: var(--accent-light); color: var(--accent); }
+    .notif-icon.ok { background: var(--primary-light); color: var(--primary-dark); }
+    .notif-item.unread { background: var(--bg); border-radius: 10px; }
+
+    /* ---------- Settings ---------- */
+    .settings-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 6px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item:hover { background: var(--bg); border-radius: 10px; }
+    .settings-item .left { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px; }
+    .settings-item .icon-badge { width: 34px; height: 34px; border-radius: 9px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .settings-item.danger .left { color: var(--danger); }
+    .settings-item.danger .icon-badge { background: var(--danger-light); }
+    .chev { color: var(--text-muted); }
+
+    .tab-row { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); }
+    .tab-btn { border: none; background: none; padding: 10px 4px; margin-right: 18px; font-weight: 700; font-size: 13.5px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab-btn.active { color: var(--primary-dark); border-bottom-color: var(--primary); }
+
+    /* ---------- Toast ---------- */
+    #notification-banner { position: fixed; top: 20px; right: 20px; max-width: 320px; background: #1e293b; color: #fff; padding: 14px 16px; border-radius: 12px; font-size: 13px; box-shadow: 0 15px 35px -8px rgba(0,0,0,0.4); display: none; z-index: 1000; border-left: 4px solid var(--primary); animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 860px) {
+        .dash-grid { grid-template-columns: 1fr; }
+        .stat-grid { grid-template-columns: repeat(2, 1fr); }
+        .form-grid-2 { grid-template-columns: 1fr; }
+        .vitals-grid { grid-template-columns: repeat(3, 1fr); }
+        .site-nav .nav-link span.label { display: none; }
+    }
+    @media (max-width: 520px) {
+        .header-inner { padding: 12px 16px; }
+        .container { padding: 24px 16px 48px 16px; }
+        .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <div class="logo" onclick="renderScreen(systemState.loggedIn ? 'dashboard' : 'login')">🩺 Medicare+ <span class="tag">Doctor</span></div>
+        <nav class="site-nav" id="site-nav"></nav>
+    </div>
+</header>
+
+<main class="site-main">
+    <div class="container" id="app-view"></div>
+</main>
+
+<footer class="site-footer">© 2026 Medicare+ Health Systems — Doctor Portal Prototype (for demonstration only)</footer>
+
+<div id="notification-banner">
+    <strong id="notif-title">System Alert</strong>
+    <p id="notif-body">A test push notification alert.</p>
+</div>
+
+<script>
+    const doctorData = {
+        name: "Dr. Arjun Sharma",
+        specialty: "General Physician",
+        exp: "8 Yrs",
+        email: "arjun.sharma@medicare.com",
+        phone: "9876543210",
+        hospital: "City Care Hospital, New Delhi",
+        fee: "₹500",
+        room: "Room 102",
+        avatar: "👨‍⚕️"
+    };
+
+    const initialQueue = [
+        { id: 18, token: "#18", name: "Rahul Kumar", age: 29, gender: "Male", time: "11:45 AM", symptoms: "Fever, Headache, Cough", status: "in-consultation",
+          history: "No known allergies", chronic: "No chronic illness", vitals: { bp: "120/80", temp: "101°F", pulse: "88 bpm" }, followUp: "20 May 2024" },
+        { id: 19, token: "#19", name: "Neha Patel", age: 34, gender: "Female", time: "12:00 PM", symptoms: "Cold, Sore Throat", status: "waiting",
+          history: "Penicillin allergy", chronic: "No chronic illness", vitals: { bp: "118/76", temp: "99.2°F", pulse: "80 bpm" }, followUp: "-" },
+        { id: 20, token: "#20", name: "Amit Singh", age: 41, gender: "Male", time: "12:15 PM", symptoms: "Back Pain, Stiffness", status: "waiting",
+          history: "No known allergies", chronic: "Mild hypertension", vitals: { bp: "132/85", temp: "98.6°F", pulse: "76 bpm" }, followUp: "-" },
+        { id: 21, token: "#21", name: "Pooja Verma", age: 26, gender: "Female", time: "12:30 PM", symptoms: "Migraine, Nausea", status: "waiting",
+          history: "No known allergies", chronic: "No chronic illness", vitals: { bp: "110/72", temp: "98.4°F", pulse: "82 bpm" }, followUp: "-" },
+        { id: 22, token: "#24", name: "Rakesh Gupta", age: 52, gender: "Male", time: "12:45 PM", symptoms: "Chest Discomfort, Fatigue", status: "waiting",
+          history: "No known allergies", chronic: "Type 2 Diabetes", vitals: { bp: "138/90", temp: "98.9°F", pulse: "84 bpm" }, followUp: "-" }
+    ];
+
+    const completedToday = [
+        { token: "#12", name: "Sneha Joshi", time: "10:00 AM", diagnosis: "Viral Fever" },
+        { token: "#13", name: "Farhan Ali", time: "10:15 AM", diagnosis: "Seasonal Allergy" },
+        { token: "#14", name: "Divya Reddy", time: "10:30 AM", diagnosis: "Routine Checkup" },
+        { token: "#15", name: "Karan Bhatt", time: "10:45 AM", diagnosis: "Gastritis" }
+    ];
+
+    const cancelledToday = [
+        { token: "#16", name: "Meera Iyer", time: "11:00 AM", reason: "Doctor not available due to emergency" }
+    ];
+
+    const systemState = {
+        currentScreen: 'login',
+        loggedIn: false,
+        stats: { totalToday: 24, completed: 10, inQueue: 15, cancelled: 2, avgTime: "12 mins" },
+        queue: JSON.parse(JSON.stringify(initialQueue)),
+        selectedPatientId: null,
+        rxDraft: [],
+        apptFilter: 'upcoming',
+        notifUnread: 3,
+        notifications: [
+            { id: 1, type: 'warn', title: 'Appointment Cancelled', body: "Meera Iyer's 11:00 AM slot was cancelled due to doctor emergency.", time: "5 min ago", unread: true },
+            { id: 2, type: 'info', title: 'Queue Update', body: "Token #22 has been rescheduled to 12:45 PM.", time: "22 min ago", unread: true },
+            { id: 3, type: 'ok', title: 'New Appointment Booked', body: "Rakesh Gupta booked Token #24 for today.", time: "1 hr ago", unread: true },
+            { id: 4, type: 'info', title: 'Reminder', body: "You have 15 patients remaining in today's queue.", time: "2 hr ago", unread: false }
+        ]
+    };
+
+    function getPatient(id) { return systemState.queue.find(p => p.id === id); }
+    function currentPatient() { return systemState.queue.find(p => p.status === 'in-consultation'); }
+    function waitingList() { return systemState.queue.filter(p => p.status === 'waiting'); }
+
+    function triggerPushNotification(title, body) {
+        const banner = document.getElementById('notification-banner');
+        document.getElementById('notif-title').innerText = title;
+        document.getElementById('notif-body').innerText = body;
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.display = 'none'; }, 4200);
+    }
+
+    function renderNav() {
+        const nav = document.getElementById('site-nav');
+        if (!systemState.loggedIn) { nav.innerHTML = ''; return; }
+        const s = systemState.currentScreen;
+        const on = (names) => names.includes(s) ? 'active' : '';
+        nav.innerHTML = `
+            <button class="nav-link ${on(['dashboard'])}" onclick="renderScreen('dashboard')">Dashboard</button>
+            <button class="nav-link ${on(['live-queue','patient-details','consultation','mark-completed'])}" onclick="renderScreen('live-queue')">Live Queue</button>
+            <button class="nav-link ${on(['appointments','cancel-appointment','cancellation-confirmed'])}" onclick="renderScreen('appointments')">Appointments</button>
+            <button class="bell-btn" onclick="renderScreen('notifications')" title="Notifications">🔔${systemState.notifUnread > 0 ? '<span class="bell-dot"></span>' : ''}</button>
+            <div class="avatar-pill" onclick="renderScreen('profile')">
+                <div class="mini-avatar">${doctorData.avatar}</div>
+                <span style="font-size:13px; font-weight:700;">${doctorData.name.split(' ').slice(-1)[0]}</span>
+            </div>
+        `;
+    }
+
+    function renderScreen(screen) {
+        systemState.currentScreen = screen;
+        const view = document.getElementById('app-view');
+        view.className = 'container';
+        view.innerHTML = "";
+
+        switch (screen) {
+
+            case 'login':
+                view.innerHTML = `
+                    <div class="login-wrap">
+                        <div class="logo">🩺 Medicare+ <span class="tag">Doctor</span></div>
+                        <p class="sub">Sign in to manage your queue, consultations and appointments.</p>
+                        <div class="card">
+                            <div class="form-field"><label class="form-label">Email or Mobile Number</label><input class="form-input" id="login-user" placeholder="arjun.sharma@medicare.com" value="arjun.sharma@medicare.com"></div>
+                            <div class="form-field"><label class="form-label">Password</label><input class="form-input" type="password" id="login-pass" placeholder="••••••••" value="••••••••"></div>
+                            <span class="forgot-link">Forgot Password?</span>
+                            <button class="btn-green btn-full" onclick="doLogin()">Login</button>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'dashboard': {
+                const st = systemState.stats;
+                const scheduleAll = [...systemState.queue].sort((a,b) => a.id - b.id);
+                view.innerHTML = `
+                    <div class="greeting-row">
+                        <h2>Hello, ${doctorData.name} 👋</h2>
+                        <span style="font-size:13px; color:var(--text-muted); font-weight:600;">${doctorData.specialty}</span>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-card green"><div class="num">${st.totalToday}</div><div class="lbl">Today's Appointments</div></div>
+                        <div class="stat-card blue"><div class="num">${st.completed}</div><div class="lbl">Completed</div></div>
+                        <div class="stat-card amber"><div class="num">${st.inQueue}</div><div class="lbl">In Queue</div></div>
+                        <div class="stat-card red"><div class="num">${st.cancelled}</div><div class="lbl">Cancelled</div></div>
+                    </div>
+                    <div class="dash-grid">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div class="section-title">Today's Schedule</div>
+                                <button class="nav-link" style="padding:0; font-size:13px; color:var(--primary-dark);" onclick="renderScreen('live-queue')">View Live Queue →</button>
+                            </div>
+                            <div class="card" style="padding:6px 16px;">
+                                ${scheduleAll.map(p => `
+                                    <div class="sched-item" onclick="openPatientDetails(${p.id})">
+                                        <div class="sched-time">${p.time}</div>
+                                        <div class="avatar" style="width:38px;height:38px;font-size:16px;">🧑</div>
+                                        <div style="flex-grow:1;">
+                                            <div class="sched-name">${p.name} <span style="font-weight:500; color:var(--text-muted); font-size:12px;">${p.token}</span></div>
+                                            <div class="sched-meta">${p.symptoms}</div>
+                                        </div>
+                                        <span class="status-tag ${p.status}">${p.status.replace('-', ' ')}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="card sidebar-card">
+                                <div style="font-weight:700; font-size:13px; margin-bottom:10px;">At a Glance</div>
+                                <div class="row"><span>Avg. Consultation Time</span><span>${st.avgTime}</span></div>
+                                <div class="row"><span>Hospital</span><span>${doctorData.hospital.split(',')[0]}</span></div>
+                                <div class="row"><span>Consultation Room</span><span>${doctorData.room}</span></div>
+                                <div class="row"><span>Consultation Fee</span><span>${doctorData.fee}</span></div>
+                            </div>
+                            <button class="btn-green btn-full" onclick="renderScreen('live-queue')">View Appointments</button>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'live-queue': {
+                const cur = currentPatient();
+                const wait = waitingList();
+                view.innerHTML = `
+                    <div class="greeting-row">
+                        <h2 style="font-size:22px;">Live Queue</h2>
+                        <span class="live-badge" style="color:var(--danger);"><span class="live-dot" style="background:var(--danger);"></span>Live</span>
+                    </div>
+                    <div class="dash-grid">
+                        <div>
+                            ${cur ? `
+                            <div class="token-hero">
+                                <div class="tlabel">Current Token · In Consultation</div>
+                                <div class="tnum">${cur.token}</div>
+                                <div style="font-size:14px; font-weight:700;">${cur.name} · ${cur.age} / ${cur.gender}</div>
+                                <div style="font-size:12.5px; opacity:.9; margin-top:2px;">${cur.symptoms}</div>
+                            </div>
+                            <div class="btn-row" style="margin-bottom:24px;">
+                                <button class="btn-outline" onclick="openPatientDetails(${cur.id})">View Patient Details</button>
+                                <button class="btn-green" onclick="renderScreen('consultation')">Continue Consultation</button>
+                            </div>
+                            ` : `
+                            <div class="card" style="background:var(--primary-light); border-color:var(--primary); text-align:center; padding:28px; margin-bottom:24px;">
+                                <p style="font-weight:700; color:var(--primary-dark); margin-bottom:14px;">No patient currently in consultation.</p>
+                                ${wait.length ? `<button class="btn-green" onclick="startConsultation(${wait[0].id})">Start Consultation with ${wait[0].name}</button>` : `<p style="font-size:13px; color:var(--text-muted);">Queue is empty for today.</p>`}
+                            </div>
+                            `}
+                            <div class="section-title">Total in Queue: ${wait.length}</div>
+                            <div class="card" style="padding:6px 16px;">
+                                ${wait.length ? wait.map((p, i) => `
+                                    <div class="queue-list-item">
+                                        <div class="queue-pos">${i + 1}</div>
+                                        <div style="flex-grow:1;">
+                                            <div style="font-weight:700; font-size:13.5px;">${p.name} <span style="font-weight:500; color:var(--text-muted); font-size:11.5px;">${p.token}</span></div>
+                                            <div style="font-size:11.5px; color:var(--text-muted);">${p.time} · ${p.symptoms}</div>
+                                        </div>
+                                        <button class="btn-outline btn-sm" onclick="openPatientDetails(${p.id})">View</button>
+                                    </div>
+                                `).join('') : '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px 0;">No patients waiting.</p>'}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="card sidebar-card">
+                                <div style="font-weight:700; font-size:13px; margin-bottom:10px;">Queue Summary</div>
+                                <div class="row"><span>Total in Queue</span><span>${systemState.stats.inQueue}</span></div>
+                                <div class="row"><span>Completed Today</span><span>${systemState.stats.completed}</span></div>
+                                <div class="row"><span>Cancelled Today</span><span>${systemState.stats.cancelled}</span></div>
+                                <div class="row"><span>Avg. Consultation</span><span>${systemState.stats.avgTime}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'patient-details': {
+                const p = getPatient(systemState.selectedPatientId);
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card">
+                        <div class="patient-header">
+                            <div class="avatar" style="width:60px;height:60px;font-size:26px;">🧑</div>
+                            <div>
+                                <div style="font-weight:800; font-size:19px;">${p.name} <span style="font-weight:600; color:var(--text-muted); font-size:13px;">${p.token}</span></div>
+                                <div style="font-size:13px; color:var(--text-muted);">${p.age} yrs · ${p.gender} · ${p.time}</div>
+                            </div>
+                        </div>
+                        <div class="card" style="background:var(--bg); margin-bottom:16px;">
+                            <div style="font-weight:700; font-size:13px; margin-bottom:6px;">Visit Reason</div>
+                            <div style="font-size:13.5px;">${p.symptoms}</div>
+                        </div>
+                        <div class="vitals-grid">
+                            <div class="vbox"><div class="vval">${p.vitals.bp}</div><div class="vlbl">Blood Pressure</div></div>
+                            <div class="vbox"><div class="vval">${p.vitals.temp}</div><div class="vlbl">Temperature</div></div>
+                            <div class="vbox"><div class="vval">${p.vitals.pulse}</div><div class="vlbl">Pulse</div></div>
+                        </div>
+                        <div class="card" style="background:var(--bg); margin-bottom:20px;">
+                            <div style="font-weight:700; font-size:13px; margin-bottom:6px;">Medical History</div>
+                            <div style="font-size:13px; margin-bottom:4px;">Allergies: ${p.history}</div>
+                            <div style="font-size:13px;">Chronic Conditions: ${p.chronic}</div>
+                        </div>
+                        <div class="btn-row" style="margin-bottom:12px;">
+                            <button class="btn-outline" onclick="renderScreen('live-queue')">Back</button>
+                            <button class="btn-danger" onclick="renderScreen('cancel-appointment')">Cancel</button>
+                        </div>
+                        ${p.status === 'in-consultation'
+                            ? `<button class="btn-green btn-full" onclick="renderScreen('consultation')">Continue Consultation</button>`
+                            : `<button class="btn-green btn-full" onclick="startConsultation(${p.id})">Start Consultation</button>`}
+                    </div>
+                `;
+                break;
+            }
+
+            case 'consultation': {
+                const p = currentPatient() || getPatient(systemState.selectedPatientId);
+                view.classList.add('narrow');
+                if (systemState.rxDraft.length === 0) {
+                    systemState.rxDraft = [{ drug: "Paracetamol 650mg", dose: "1 tablet", freq: "Twice daily, after food" }];
+                }
+                view.innerHTML = `
+                    <div class="card">
+                        <div style="font-weight:800; font-size:19px; margin-bottom:4px;">${p.name} <span style="font-weight:600; color:var(--text-muted); font-size:13px;">${p.token}</span></div>
+                        <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:18px;">${p.symptoms}</p>
+
+                        <div class="form-field">
+                            <label class="form-label">Diagnosis</label>
+                            <input class="form-input" id="inp-diagnosis" value="Viral Fever">
+                        </div>
+
+                        <label class="form-label" style="margin-bottom:10px;">Prescription</label>
+                        <div id="rx-list">${renderRxRows()}</div>
+                        <button class="add-rx-btn" style="margin:6px 0 18px 0;" onclick="addRxRow()">+ Add Medicine</button>
+
+                        <div class="form-field">
+                            <label class="form-label">Doctor's Notes</label>
+                            <textarea class="form-textarea" id="inp-notes" rows="3">Drink plenty of fluids, rest well and avoid cold food. Come for follow-up in 3 days if fever persists.</textarea>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Follow-up Date</label>
+                            <input class="form-input" id="inp-followup" value="20 May 2024">
+                        </div>
+
+                        <button class="btn-green btn-full" onclick="savePrescription()">Save Prescription</button>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'mark-completed': {
+                const p = systemState._justCompleted;
+                const next = waitingList()[0];
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card" style="text-align:center;">
+                        <div class="success-checkmark">✔</div>
+                        <div style="font-weight:800; font-size:20px; margin-bottom:6px;">${p.token} Marked as Completed</div>
+                        <p style="color:var(--text-muted); font-size:13px; margin-bottom:22px;">Prescription for ${p.name} has been saved and shared with the patient.</p>
+                        ${next ? `
+                        <div class="card" style="background:var(--primary-light); border-color:var(--primary); margin-bottom:20px;">
+                            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">Next Token</div>
+                            <div style="font-weight:800; font-size:20px; color:var(--primary-dark);">${next.token} · ${next.name}</div>
+                        </div>
+                        <button class="btn-green btn-full" style="margin-bottom:10px;" onclick="startConsultation(${next.id})">Go to Next Patient</button>
+                        ` : `<div class="card" style="background:var(--bg); margin-bottom:20px;"><p style="font-size:13px; color:var(--text-muted);">No more patients in today's queue.</p></div>`}
+                        <button class="btn-outline btn-full" onclick="renderScreen('live-queue')">Back to Live Queue</button>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'appointments': {
+                const f = systemState.apptFilter;
+                view.innerHTML = `
+                    <div class="greeting-row"><h2 style="font-size:24px;">Appointments</h2></div>
+                    <div class="tab-row">
+                        <button class="tab-btn ${f === 'upcoming' ? 'active' : ''}" onclick="setApptFilter('upcoming')">Upcoming</button>
+                        <button class="tab-btn ${f === 'completed' ? 'active' : ''}" onclick="setApptFilter('completed')">Completed</button>
+                        <button class="tab-btn ${f === 'cancelled' ? 'active' : ''}" onclick="setApptFilter('cancelled')">Cancelled</button>
+                    </div>
+                    <div class="card" style="padding:6px 16px;">
+                        ${renderApptList(f)}
+                    </div>
+                `;
+                break;
+            }
+
+            case 'cancel-appointment': {
+                const p = getPatient(systemState.selectedPatientId) || currentPatient();
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card" style="text-align:center;">
+                        <div class="warn-icon">⚠</div>
+                        <div style="font-weight:800; font-size:19px; margin-bottom:8px;">Cancel Appointment</div>
+                        <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:20px;">Are you sure you want to cancel this appointment for <strong>${p.name}</strong> (${p.token})? This action cannot be undone.</p>
+                        <div class="btn-row">
+                            <button class="btn-outline" onclick="renderScreen('live-queue')">No, Go Back</button>
+                            <button class="btn-danger" onclick="confirmCancelAppointment(${p.id})">Yes, Cancel</button>
+                        </div>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'cancellation-confirmed': {
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card" style="text-align:center;">
+                        <div class="success-checkmark">✔</div>
+                        <div style="font-weight:800; font-size:19px; margin-bottom:8px;">Appointment Cancelled</div>
+                        <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:22px;">The patient has been notified automatically. The queue has been updated.</p>
+                        <button class="btn-green btn-full" onclick="renderScreen('live-queue')">Back to Live Queue</button>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'notifications': {
+                systemState.notifUnread = 0;
+                systemState.notifications.forEach(n => n.unread = false);
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="greeting-row"><h2 style="font-size:22px;">Notifications</h2></div>
+                    <div class="card" style="padding:6px 16px;">
+                        ${systemState.notifications.map(n => `
+                            <div class="notif-item ${n.unread ? 'unread' : ''}">
+                                <div class="notif-icon ${n.type}">${n.type === 'warn' ? '⚠' : n.type === 'ok' ? '✔' : 'ℹ'}</div>
+                                <div style="flex-grow:1;">
+                                    <div style="font-weight:700; font-size:13.5px;">${n.title}</div>
+                                    <div style="font-size:12.5px; color:var(--text-muted);">${n.body}</div>
+                                    <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">${n.time}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn-outline btn-full" style="margin-top:16px;" onclick="renderScreen('dashboard')">Back to Dashboard</button>
+                `;
+                break;
+            }
+
+            case 'profile': {
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="card" style="text-align:center; margin-bottom:18px;">
+                        <div class="avatar" style="width:76px; height:76px; font-size:32px; margin:0 auto 12px auto;">${doctorData.avatar}</div>
+                        <div style="font-weight:800; font-size:19px;">${doctorData.name}</div>
+                        <div style="font-size:13px; color:var(--text-muted);">${doctorData.specialty} · ${doctorData.exp} experience</div>
+                    </div>
+                    <div class="card sidebar-card">
+                        <div class="row"><span>Email</span><span>${doctorData.email}</span></div>
+                        <div class="row"><span>Mobile</span><span>${doctorData.phone}</span></div>
+                        <div class="row"><span>Hospital</span><span>${doctorData.hospital}</span></div>
+                        <div class="row"><span>Consultation Fee</span><span>${doctorData.fee}</span></div>
+                        <div class="row"><span>Room</span><span>${doctorData.room}</span></div>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn-outline" onclick="renderScreen('settings')">Settings</button>
+                        <button class="btn-green" onclick="renderScreen('dashboard')">Edit Profile</button>
+                    </div>
+                `;
+                break;
+            }
+
+            case 'settings': {
+                view.classList.add('narrow');
+                view.innerHTML = `
+                    <div class="greeting-row"><h2 style="font-size:22px;">Settings</h2></div>
+                    <div class="card" style="padding:4px 16px; margin-bottom:16px;">
+                        <div class="settings-item"><div class="left"><span class="icon-badge">🗓️</span>Manage Availability</div><span class="chev">›</span></div>
+                        <div class="settings-item"><div class="left"><span class="icon-badge">🔒</span>Change Password</div><span class="chev">›</span></div>
+                        <div class="settings-item"><div class="left"><span class="icon-badge">🔔</span>Notification Settings</div><span class="chev">›</span></div>
+                        <div class="settings-item"><div class="left"><span class="icon-badge">🎧</span>Help &amp; Support</div><span class="chev">›</span></div>
+                    </div>
+                    <div class="card" style="padding:4px 16px;">
+                        <div class="settings-item danger" onclick="doLogout()"><div class="left"><span class="icon-badge">🚪</span>Logout</div><span class="chev">›</span></div>
+                    </div>
+                `;
+                break;
+            }
+        }
+
+        renderNav();
+        window.scrollTo(0, 0);
+    }
+
+    function renderRxRows() {
+        return systemState.rxDraft.map((rx, i) => `
+            <div class="rx-row">
+                <input class="form-input" placeholder="Medicine" value="${rx.drug}" onchange="updateRx(${i}, 'drug', this.value)">
+                <input class="form-input" placeholder="Dose" style="max-width:110px;" value="${rx.dose}" onchange="updateRx(${i}, 'dose', this.value)">
+                <button class="rx-remove" onclick="removeRxRow(${i})">✕</button>
+            </div>
+        `).join('');
+    }
+
+    function addRxRow() {
+        systemState.rxDraft.push({ drug: "", dose: "", freq: "" });
+        document.getElementById('rx-list').innerHTML = renderRxRows();
+    }
+    function removeRxRow(i) {
+        systemState.rxDraft.splice(i, 1);
+        document.getElementById('rx-list').innerHTML = renderRxRows();
+    }
+    function updateRx(i, field, val) { systemState.rxDraft[i][field] = val; }
+
+    function renderApptList(filter) {
+        if (filter === 'upcoming') {
+            const list = systemState.queue.filter(p => p.status === 'waiting' || p.status === 'in-consultation');
+            if (!list.length) return '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px 0;">No upcoming appointments.</p>';
+            return list.map(p => `
+                <div class="sched-item" onclick="openPatientDetails(${p.id})">
+                    <div class="sched-time">${p.time}</div>
+                    <div style="flex-grow:1;">
+                        <div class="sched-name">${p.name} <span style="font-weight:500; color:var(--text-muted); font-size:12px;">${p.token}</span></div>
+                        <div class="sched-meta">${p.symptoms}</div>
+                    </div>
+                    <span class="status-tag ${p.status === 'in-consultation' ? 'in-consultation' : 'upcoming'}">${p.status === 'in-consultation' ? 'In Consultation' : 'Upcoming'}</span>
+                </div>
+            `).join('');
+        }
+        if (filter === 'completed') {
+            const list = [...completedToday, ...systemState.queue.filter(p => p.status === 'completed')];
+            if (!list.length) return '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px 0;">No completed appointments yet.</p>';
+            return list.map(p => `
+                <div class="sched-item" style="cursor:default;">
+                    <div class="sched-time">${p.time}</div>
+                    <div style="flex-grow:1;">
+                        <div class="sched-name">${p.name} <span style="font-weight:500; color:var(--text-muted); font-size:12px;">${p.token}</span></div>
+                        <div class="sched-meta">${p.diagnosis || p.symptoms}</div>
+                    </div>
+                    <span class="status-tag completed">Completed</span>
+                </div>
+            `).join('');
+        }
+        const list = [...cancelledToday, ...systemState.queue.filter(p => p.status === 'cancelled')];
+        if (!list.length) return '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px 0;">No cancelled appointments.</p>';
+        return list.map(p => `
+            <div class="sched-item" style="cursor:default;">
+                <div class="sched-time">${p.time}</div>
+                <div style="flex-grow:1;">
+                    <div class="sched-name">${p.name} <span style="font-weight:500; color:var(--text-muted); font-size:12px;">${p.token}</span></div>
+                    <div class="sched-meta">${p.reason}</div>
+                </div>
+                <span class="status-tag cancelled">Cancelled</span>
+            </div>
+        `).join('');
+    }
+
+    function setApptFilter(f) { systemState.apptFilter = f; renderScreen('appointments'); }
+
+    function doLogin() {
+        systemState.loggedIn = true;
+        triggerPushNotification("Medicare+ Doctor", `Welcome back, ${doctorData.name}!`);
+        renderScreen('dashboard');
+    }
+    function doLogout() {
+        systemState.loggedIn = false;
+        renderScreen('login');
+    }
+
+    function openPatientDetails(id) {
+        systemState.selectedPatientId = id;
+        renderScreen('patient-details');
+    }
+
+    function startConsultation(id) {
+        systemState.queue.forEach(p => { if (p.status === 'in-consultation') p.status = 'waiting'; });
+        const p = getPatient(id);
+        p.status = 'in-consultation';
+        systemState.selectedPatientId = id;
+        systemState.rxDraft = [];
+        triggerPushNotification("Consultation Started", `${p.name} (${p.token}) called in.`);
+        renderScreen('consultation');
+    }
+
+    function savePrescription() {
+        const p = currentPatient() || getPatient(systemState.selectedPatientId);
+        p.status = 'completed';
+        systemState.stats.completed += 1;
+        systemState.stats.inQueue = Math.max(0, systemState.stats.inQueue - 1);
+        systemState._justCompleted = p;
+        systemState.rxDraft = [];
+        triggerPushNotification("Prescription Saved", `${p.token} marked as completed. Notification sent to patient.`);
+        renderScreen('mark-completed');
+    }
+
+    function confirmCancelAppointment(id) {
+        const p = getPatient(id);
+        if (p) {
+            p.status = 'cancelled';
+            systemState.stats.cancelled += 1;
+            systemState.stats.inQueue = Math.max(0, systemState.stats.inQueue - 1);
+        }
+        triggerPushNotification("Appointment Cancelled", `${p ? p.token : ''} cancelled. Patient notified automatically.`);
+        renderScreen('cancellation-confirmed');
+    }
+
+    renderScreen('login');
+</script>
+</body>
+</html>
