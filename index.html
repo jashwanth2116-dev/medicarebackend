@@ -1,239 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medicare+ | Login</title>
-<style>
-    :root {
-        --primary: #1062fe;
-        --primary-dark: #0d52d1;
-        --primary-light: #eef4ff;
-        --doctor: #10b981;
-        --doctor-dark: #059669;
-        --doctor-light: #ecfdf5;
-        --admin: #7c3aed;
-        --admin-dark: #6d28d9;
-        --admin-light: #f3ebff;
-        --danger: #ef4444;
-        --danger-light: #fef2f2;
-        --text-dark: #0f172a;
-        --text-muted: #64748b;
-        --border-color: #e2e8f0;
-        --bg: #f6f8fb;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background: var(--bg);
-        color: var(--text-dark);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .site-header { width: 100%; background: #fff; border-bottom: 1px solid var(--border-color); }
-    .header-inner { max-width: 1120px; margin: 0 auto; padding: 16px 24px; }
-    .logo { font-size: 21px; font-weight: 800; color: var(--primary-dark); display: flex; align-items: center; gap: 6px; }
-    .logo span.tag { font-size: 10.5px; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 3px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .3px; }
-
-    .wrap { width: 100%; max-width: 460px; margin: 40px auto; padding: 0 20px 60px 20px; flex-grow: 1; }
-    .intro { text-align: center; margin-bottom: 26px; }
-    .intro h1 { font-size: 22px; margin-bottom: 6px; }
-    .intro p { color: var(--text-muted); font-size: 13.5px; }
-
-    .role-tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 22px; background: #fff; padding: 6px; border-radius: 14px; border: 1px solid var(--border-color); }
-    .role-tab { border: none; background: transparent; padding: 12px 6px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--text-muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .role-tab .ic { font-size: 18px; }
-    .role-tab.active { color: #fff; }
-    .role-tab[data-role="patient"].active { background: var(--primary); }
-    .role-tab[data-role="doctor"].active { background: var(--doctor); }
-    .role-tab[data-role="admin"].active { background: var(--admin); }
-
-    .card { background: #fff; border-radius: 16px; padding: 26px; border: 1px solid var(--border-color); }
-    .role-banner { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 20px; }
-    .role-banner.patient { background: var(--primary-light); color: var(--primary-dark); }
-    .role-banner.doctor { background: var(--doctor-light); color: var(--doctor-dark); }
-    .role-banner.admin { background: var(--admin-light); color: var(--admin-dark); }
-
-    .form-label { font-size: 12.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; display: block; }
-    .form-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background: #fbfcfe; outline: none; font-family: inherit; }
-    .form-input:focus { border-color: var(--primary); background: #fff; }
-    .form-field { margin-bottom: 16px; }
-
-    .btn-login { width: 100%; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; padding: 13px 20px; color: #fff; margin-top: 4px; }
-    .btn-login[data-role="patient"] { background: var(--primary); }
-    .btn-login[data-role="patient"]:hover { background: var(--primary-dark); }
-    .btn-login[data-role="doctor"] { background: var(--doctor); }
-    .btn-login[data-role="doctor"]:hover { background: var(--doctor-dark); }
-    .btn-login[data-role="admin"] { background: var(--admin); }
-    .btn-login[data-role="admin"]:hover { background: var(--admin-dark); }
-
-    .error-box { background: var(--danger-light); color: var(--danger); font-size: 13px; font-weight: 600; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; display: none; }
-    .error-box.show { display: block; }
-
-    .demo-box { margin-top: 20px; background: var(--bg); border: 1px dashed var(--border-color); border-radius: 10px; padding: 14px; font-size: 12.5px; }
-    .demo-box .dtitle { font-weight: 700; margin-bottom: 8px; color: var(--text-dark); }
-    .demo-row { display: flex; justify-content: space-between; padding: 4px 0; color: var(--text-muted); }
-    .demo-row b { color: var(--text-dark); font-family: monospace; }
-    .fill-btn { margin-top: 10px; width: 100%; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer; color: var(--text-dark); }
-    .fill-btn:hover { border-color: var(--primary); color: var(--primary-dark); }
-
-    .site-footer { text-align: center; font-size: 12px; color: var(--text-muted); padding: 18px; }
-
-    /* ---------- Portal frame view ---------- */
-    #portal-view { display: none; position: fixed; inset: 0; z-index: 500; background: #fff; }
-    #portal-view.show { display: block; }
-    #portal-frame { width: 100%; height: 100%; border: none; }
-    #switch-btn { position: fixed; bottom: 18px; right: 18px; z-index: 600; background: var(--text-dark); color: #fff; border: none; border-radius: 999px; padding: 11px 18px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.25); display: none; }
-    #switch-btn.show { display: block; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicare+ Complete Universal Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
+        .container { background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 650px; }
+        h2, h3 { color: #2c3e50; text-align: center; margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #333; font-weight: 600; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background-color: #0066ff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #0052cc; }
+        .toggle-link { text-align: center; margin-top: 15px; font-size: 14px; }
+        .toggle-link a { color: #0066ff; text-decoration: none; font-weight: bold; cursor: pointer; }
+        .dashboard { display: none; }
+        
+        /* Doctor Cards Styling */
+        .doctor-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #f8fafc; }
+        .doctor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .doctor-name { font-weight: bold; color: #1e293b; font-size: 16px; }
+        .specialist-badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .doctor-details { font-size: 13px; color: #64748b; margin-bottom: 10px; display: flex; gap: 15px; }
+        
+        .msg-success { color: green; text-align: center; margin-bottom: 10px; font-weight: bold; }
+        .msg-error { color: red; text-align: center; margin-bottom: 10px; font-weight: bold; }
+    </style>
 </head>
 <body>
 
-<div id="login-view">
-    <div class="site-header">
-        <div class="header-inner">
-            <div class="logo">Medicare+ <span class="tag">Login Hub</span></div>
+<div class="container">
+    <!-- Auth Section (Login & Register) -->
+    <div id="authSection">
+        <h2 id="formTitle">Medicare+ Portal</h2>
+        <div id="msgBox"></div>
+
+        <div class="form-group">
+            <label>Email Address / User ID</label>
+            <input type="email" id="emailInput" placeholder="24cse055@act.edu.in" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="passwordInput" placeholder="Enter password" required>
+        </div>
+
+        <button id="mainBtn" onclick="handleAuth()">Sign In</button>
+
+        <div class="toggle-link">
+            <span id="toggleText">Don't have an account? </span>
+            <a onclick="toggleMode()" id="toggleBtn">Register Here</a>
         </div>
     </div>
 
-    <div class="wrap">
-        <div class="intro">
-            <h1>Welcome to Medicare+</h1>
-            <p>Choose your portal and sign in to continue</p>
+    <!-- Patient Dashboard Section -->
+    <div id="dashboardSection" class="dashboard">
+        <h2>Patient Dashboard</h2>
+        <p id="welcomeUser" style="text-align: center; color: #0066ff; margin-bottom: 20px; font-weight: bold;"></p>
+        
+        <div id="bookingMsg"></div>
+
+        <h3>Available Doctors & Specialists</h3>
+
+        <!-- Doctor 1 -->
+        <div class="doctor-card">
+            <div class="doctor-header">
+                <span class="doctor-name">Dr. Rajesh Kumar</span>
+                <span class="specialist-badge">Cardiologist</span>
+            </div>
+            <div class="doctor-details">
+                <span><strong>Experience:</strong> 12+ Years</span>
+                <span><strong>Consultation Fee:</strong> ₹800</span>
+            </div>
+            <button style="padding: 6px 12px; font-size: 13px;" onclick="selectDoctor('Dr. Rajesh Kumar (Cardiologist - ₹800)')">Book Specialist</button>
         </div>
 
-        <div class="role-tabs">
-            <button class="role-tab" data-role="patient" onclick="selectRole('patient')">
-                <span class="ic">P</span>Patient
-            </button>
-            <button class="role-tab" data-role="doctor" onclick="selectRole('doctor')">
-                <span class="ic">D</span>Doctor
-            </button>
-            <button class="role-tab" data-role="admin" onclick="selectRole('admin')">
-                <span class="ic">A</span>Admin
-            </button>
+        <!-- Doctor 2 -->
+        <div class="doctor-card">
+            <div class="doctor-header">
+                <span class="doctor-name">Dr. Anitha Ramesh</span>
+                <span class="specialist-badge">Dermatologist</span>
+            </div>
+            <div class="doctor-details">
+                <span><strong>Experience:</strong> 8+ Years</span>
+                <span><strong>Consultation Fee:</strong> ₹600</span>
+            </div>
+            <button style="padding: 6px 12px; font-size: 13px;" onclick="selectDoctor('Dr. Anitha Ramesh (Dermatologist - ₹600)')">Book Specialist</button>
         </div>
 
-        <div class="card">
-            <div id="role-banner"></div>
-            <div id="error-box" class="error-box"></div>
-
-            <div class="form-field">
-                <label class="form-label" id="id-label">Email / ID</label>
-                <input class="form-input" id="inp-id" placeholder="Enter your ID">
+        <!-- Doctor 3 -->
+        <div class="doctor-card">
+            <div class="doctor-header">
+                <span class="doctor-name">Dr. Suresh Verma</span>
+                <span class="specialist-badge">General Physician</span>
             </div>
-            <div class="form-field">
-                <label class="form-label">Password</label>
-                <input class="form-input" id="inp-pass" type="password" placeholder="Enter your password">
+            <div class="doctor-details">
+                <span><strong>Experience:</strong> 15+ Years</span>
+                <span><strong>Consultation Fee:</strong> ₹500</span>
+            </div>
+            <button style="padding: 6px 12px; font-size: 13px;" onclick="selectDoctor('Dr. Suresh Verma (General Physician - ₹500)')">Book Specialist</button>
+        </div>
+
+        <!-- Slot Booking Box -->
+        <div style="margin-top: 25px; padding-top: 15px; border-top: 2px dashed #ccc;">
+            <h3>Confirm Appointment Slot</h3>
+            
+            <div class="form-group">
+                <label>Selected Doctor & Fee</label>
+                <input type="text" id="selectedDoctorInput" placeholder="Click 'Book Specialist' above" readonly required>
             </div>
 
-            <button class="btn-login" id="login-btn" onclick="attemptLogin()">Sign In</button>
-
-            <div class="demo-box">
-                <div class="dtitle">Demo credentials for this portal</div>
-                <div class="demo-row"><span>ID</span><b id="demo-id"></b></div>
-                <div class="demo-row"><span>Password</span><b id="demo-pass"></b></div>
-                <button class="fill-btn" onclick="autofill()">Autofill demo credentials</button>
+            <div class="form-group">
+                <label>Appointment Date</label>
+                <input type="date" id="appointmentDate" required>
             </div>
+
+            <div class="form-group">
+                <label>Available Time Slot</label>
+                <select id="timeSlot">
+                    <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+                    <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                    <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+                    <option value="06:00 PM - 07:00 PM">06:00 PM - 07:00 PM</option>
+                </select>
+            </div>
+
+            <button onclick="bookAppointment()">Confirm & Save Booking</button>
+            <button style="background-color: #6c757d; margin-top: 8px;" onclick="logout()">Logout</button>
         </div>
     </div>
-
-    <div class="site-footer">Medicare+ demo build &mdash; for prototyping purposes only.</div>
 </div>
-
-<div id="portal-view">
-    <iframe id="portal-frame"></iframe>
-</div>
-<button id="switch-btn" onclick="backToLogin()">&larr; Switch Portal</button>
-
-<!-- Embedded panel sources (base64) so the whole app is one file -->
-
 
 <script>
-    const CREDENTIALS = {
-        patient: { id: "rahul@gmail.com",         pass: "patient123", label: "Patient", src: "patient.html" },
-        doctor:  { id: "doctor@medicareplus.com", pass: "doctor123",  label: "Doctor",  src: "doctor.html"  },
-        admin:   { id: "admin@medicareplus.com",  pass: "admin123",   label: "Admin",   src: "admin.html"   }
-    };
+    const API_URL = "https://medicarebackend-1nvu.onrender.com/api";
+    let isLoginMode = true;
+    let currentUserEmail = "";
 
-    let currentRole = "patient";
-
-    function selectRole(role) {
-        currentRole = role;
-        document.querySelectorAll(".role-tab").forEach(t => {
-            t.classList.toggle("active", t.dataset.role === role);
-        });
-
-        const cred = CREDENTIALS[role];
-        const banner = document.getElementById("role-banner");
-        banner.className = "role-banner " + role;
-        const labels = { patient: "Patient", doctor: "Doctor", admin: "Admin" };
-        banner.innerHTML = "Signing in to the <b>" + labels[role] + " Portal</b>";
-
-        document.getElementById("id-label").textContent = role === "doctor" ? "Doctor Email" : role === "admin" ? "Admin Email" : "Email / ID";
-        document.getElementById("login-btn").dataset.role = role;
-        document.getElementById("login-btn").textContent = "Sign In as " + cred.label;
-
-        document.getElementById("demo-id").textContent = cred.id;
-        document.getElementById("demo-pass").textContent = cred.pass;
-
-        document.getElementById("error-box").classList.remove("show");
-        document.getElementById("inp-id").value = "";
-        document.getElementById("inp-pass").value = "";
+    function toggleMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('formTitle').innerText = isLoginMode ? "Medicare+ Portal" : "Register New Patient";
+        document.getElementById('mainBtn').innerText = isLoginMode ? "Sign In" : "Register";
+        document.getElementById('toggleText').innerText = isLoginMode ? "Don't have an account? " : "Already have an account? ";
+        document.getElementById('toggleBtn').innerText = isLoginMode ? "Register Here" : "Login Here";
+        document.getElementById('msgBox').innerHTML = "";
     }
 
-    function autofill() {
-        const cred = CREDENTIALS[currentRole];
-        document.getElementById("inp-id").value = cred.id;
-        document.getElementById("inp-pass").value = cred.pass;
-    }
+    async function handleAuth() {
+        const email = document.getElementById('emailInput').value;
+        const password = document.getElementById('passwordInput').value;
+        const msgBox = document.getElementById('msgBox');
 
-    function b64DecodeUnicode(str) {
-        return decodeURIComponent(atob(str).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-    }
+        if(!email || !password) {
+            msgBox.innerHTML = `<p class="msg-error">Please fill all fields!</p>`;
+            return;
+        }
 
-    function attemptLogin() {
-        const cred = CREDENTIALS[currentRole];
-        const id = document.getElementById("inp-id").value.trim();
-        const pass = document.getElementById("inp-pass").value;
-        const errBox = document.getElementById("error-box");
+        const endpoint = isLoginMode ? '/login' : '/register';
 
-        if (id === cred.id && pass === cred.pass) {
-            errBox.classList.remove("show");
-            loadPortal(cred.src);
-        } else {
-            errBox.textContent = "Incorrect ID or password for the " + cred.label + " portal. Use the demo credentials below.";
-            errBox.classList.add("show");
+        try {
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                if (isLoginMode) {
+                    currentUserEmail = email;
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('dashboardSection').style.display = 'block';
+                    document.getElementById('welcomeUser').innerText = `Welcome, ${email}!`;
+                } else {
+                    msgBox.innerHTML = `<p class="msg-success">${data.message}</p>`;
+                    toggleMode();
+                }
+            } else {
+                msgBox.innerHTML = `<p class="msg-error">${data.message || 'Authentication failed'}</p>`;
+            }
+        } catch (err) {
+            msgBox.innerHTML = `<p class="msg-error">Server Connection Error!</p>`;
         }
     }
 
-    function loadPortal(src) {
-        const frame = document.getElementById("portal-frame");
-        frame.src = src;
-        document.getElementById("login-view").style.display = "none";
-        document.getElementById("portal-view").classList.add("show");
-        document.getElementById("switch-btn").classList.add("show");
+    function selectDoctor(doctorDetails) {
+        document.getElementById('selectedDoctorInput').value = doctorDetails;
     }
 
-    function backToLogin() {
-        document.getElementById("portal-frame").src = "about:blank";
-        document.getElementById("portal-view").classList.remove("show");
-        document.getElementById("switch-btn").classList.remove("show");
-        document.getElementById("login-view").style.display = "";
-        selectRole(currentRole);
+    async function bookAppointment() {
+        const doctor = document.getElementById('selectedDoctorInput').value;
+        const date = document.getElementById('appointmentDate').value;
+        const slot = document.getElementById('timeSlot').value;
+        const bookingMsg = document.getElementById('bookingMsg');
+
+        if(!doctor) {
+            bookingMsg.innerHTML = `<p class="msg-error">Please select a Doctor first!</p>`;
+            return;
+        }
+
+        if(!date) {
+            bookingMsg.innerHTML = `<p class="msg-error">Please select an Appointment Date!</p>`;
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/book-appointment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userEmail: currentUserEmail, doctorName: doctor, date, slot })
+            });
+
+            const data = await res.json();
+
+            if(data.success) {
+                bookingMsg.innerHTML = `<p class="msg-success">🎉 ${data.message}</p>`;
+            } else {
+                bookingMsg.innerHTML = `<p class="msg-error">Booking failed!</p>`;
+            }
+        } catch(err) {
+            bookingMsg.innerHTML = `<p class="msg-error">Server connection error!</p>`;
+        }
     }
 
-    selectRole("patient");
-
-    document.getElementById("inp-pass").addEventListener("keydown", e => {
-        if (e.key === "Enter") attemptLogin();
-    });
+    function logout() {
+        location.reload();
+    }
 </script>
 
 </body>
