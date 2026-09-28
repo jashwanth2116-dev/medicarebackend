@@ -1,94 +1,78 @@
 const express = require('express');
-const { Pool } = require('pg');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
 
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// PostgreSQL Connection (Database Connection String Update Pannunga)
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/medicare_db'
+// Replace YOUR_PASSWORD_HERE with your real database password
+const MONGO_URI = "mongodb+srv://jashwanth2116_db_user:jashwanth2116@cluster0.rmoczf2.mongodb.net/medicareDB?retryWrites=true&w=majority";
+
+mongoose.connect(MONGO_URI)
+  .then(() => console.log("MongoDB Connected Successfully!"))
+  .catch(err => console.error("MongoDB Connection Error:", err));
+
+// User Schema
+const userSchema = new mongoose.Schema({
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true }
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || 'medicare_secret_key_123';
+const User = mongoose.model('User', userSchema);
 
-// Rate Limiter
-const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 mins
-    max: 100, // Max 100 requests per IP
-    message: { error: 'Too many requests, please try again later.' }
+// Appointment Schema
+const appointmentSchema = new mongoose.Schema({
+    userEmail: String,
+    doctorName: String,
+    date: String,
+    slot: String,
+    createdAt: { type: Date, default: Date.now }
 });
-app.use('/api/', apiLimiter);
 
-// JWT Middleware
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+const Appointment = mongoose.model('Appointment', appointmentSchema);
 
-    if (!token) return res.status(401).json({ error: 'Access token required' });
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: 'Invalid or expired token' });
-        req.user = user;
-        next();
-    });
-}
-
-// User Register Route
+// 1. Dynamic User Signup
 app.post('/api/register', async (req, res) => {
-    const { email, password, role } = req.body;
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const newUser = await pool.query(
-            'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) RETURNING user_id, email, role',
-            [email.toLowerCase(), hashedPassword, role || 'patient']
-        );
-
-        res.status(201).json({ message: 'User registered successfully', user: newUser.rows[0] });
-    } catch (err) {
-        if (err.code === '23505') {
-            return res.status(400).json({ error: 'Email already exists' });
+        const { email, password } = req.body;
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: "Email already registered! Please Login." });
         }
-        res.status(500).json({ error: 'Server Error' });
+        const newUser = new User({ email, password });
+        await newUser.save();
+        res.status(201).json({ success: true, message: "Account created successfully! Now Login." });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Registration failed." });
     }
 });
 
-// User Login Route
+// 2. Strict Real User Login API
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
     try {
-        const userQuery = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
-        if (userQuery.rows.length === 0) return res.status(400).json({ error: 'User not found' });
-
-        const user = userQuery.rows[0];
-        const validPassword = await bcrypt.compare(password, user.password_hash);
-        if (!validPassword) return res.status(400).json({ error: 'Invalid password' });
-
-        const token = jwt.sign(
-            { userId: user.user_id, email: user.email, role: user.role },
-            JWT_SECRET,
-            { expiresIn: '8h' }
-        );
-
-        res.json({ message: 'Login successful', token: token, role: user.role });
-    } catch (err) {
-        res.status(500).json({ error: 'Server Error' });
+        const { email, password } = req.body;
+        const user = await User.findOne({ email, password });
+        if (!user) {
+            return res.status(401).json({ success: false, message: "Invalid email or password!" });
+        }
+        res.status(200).json({ success: true, message: "Login successful!", user: { email: user.email } });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server error during login." });
     }
 });
 
-// Protected Dashboard API
-app.get('/api/dashboard', authenticateToken, async (req, res) => {
-    res.json({
-        message: `Welcome user ${req.user.userId}!`,
-        user: req.user
-    });
+// 3. Book Appointment API
+app.post('/api/book-appointment', async (req, res) => {
+    try {
+        const { userEmail, doctor, date, slot } = req.body;
+        const newApp = new Appointment({ userEmail, doctorName: doctor, date, slot });
+        await newApp.save();
+        res.status(200).json({ success: true, message: `Appointment confirmed with ${doctor} on ${date} (${slot})` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Booking failed." });
+    }
 });
 
-app.listen(5000, () => console.log('Medicare Server running on port 5000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server live on port ${PORT}`));
