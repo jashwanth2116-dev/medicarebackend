@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 
@@ -7,43 +6,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// MongoDB Connection (Render-la Environment Variable-ah set panrathu moolama secure-ah irukum)
-const MONGO_URI = process.env.MONGO_URI;
-
-if (!MONGO_URI) {
-  console.error('FATAL ERROR: MONGO_URI is not defined.');
-  process.exit(1);
-}
-
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB Connected Successfully!'))
-  .catch(err => {
-    console.error('MongoDB Connection Error:', err);
-    process.exit(1);
-  });
-
-// User Schema
-const userSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
-});
-
-const User = mongoose.model('User', userSchema);
-
-// Booking Schema
-const bookingSchema = new mongoose.Schema({
-  email: String,
-  doctorName: String,
-  date: String,
-  timeSlot: String,
-  tokenNumber: Number
-});
-
-const Booking = mongoose.model('Booking', bookingSchema);
+// In-Memory Database (MongoDB thevai illai, server memory-laye data store aagum)
+const users = [];
+const bookings = [];
 
 // Root Route
 app.get('/', (req, res) => {
-  res.send('Medicare Backend Server is Running!');
+  res.send('Medicare Backend Server is Running (In-Memory Mode)!');
 });
 
 // Register Endpoint
@@ -55,15 +24,14 @@ app.post('/api/register', async (req, res) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const existingUser = await User.findOne({ email: cleanEmail });
+    const existingUser = users.find(u => u.email === cleanEmail);
 
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'Email already registered. Please login!' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ email: cleanEmail, password: hashedPassword });
-    await newUser.save();
+    users.push({ email: cleanEmail, password: hashedPassword });
 
     res.json({ success: true, message: 'Registration Successful!' });
   } catch (err) {
@@ -81,7 +49,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: cleanEmail });
+    const user = users.find(u => u.email === cleanEmail);
 
     if (!user) {
       return res.status(400).json({ success: false, message: 'User not found. Please register first!' });
@@ -103,12 +71,12 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/book', async (req, res) => {
   try {
     const { email, doctorName, date, timeSlot } = req.body;
+    
+    const doctorBookings = bookings.filter(b => b.doctorName === doctorName && b.date === date);
+    const tokenNumber = doctorBookings.length + 1;
 
-    const count = await Booking.countDocuments({ doctorName, date });
-    const tokenNumber = count + 1;
-
-    const newBooking = new Booking({ email, doctorName, date, timeSlot, tokenNumber });
-    await newBooking.save();
+    const newBooking = { email, doctorName, date, timeSlot, tokenNumber };
+    bookings.push(newBooking);
 
     res.json({ success: true, tokenNumber });
   } catch (err) {
@@ -120,14 +88,16 @@ app.post('/api/book', async (req, res) => {
 app.get('/api/queue-status', async (req, res) => {
   try {
     const { doctorName, date } = req.query;
-    const bookings = await Booking.find({ doctorName, date }).sort({ tokenNumber: 1 });
-    const currentToken = bookings.length > 0 ? 1 : 0;
+    const doctorBookings = bookings.filter(b => b.doctorName === doctorName && b.date === date);
+    doctorBookings.sort((a, b) => a.tokenNumber - b.tokenNumber);
+    
+    const currentToken = doctorBookings.length > 0 ? 1 : 0;
 
-    res.json({ success: true, currentToken, totalBookings: bookings.length });
+    res.json({ success: true, currentToken, totalBookings: doctorBookings.length });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Error fetching queue' });
   }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} (Without MongoDB)`));
